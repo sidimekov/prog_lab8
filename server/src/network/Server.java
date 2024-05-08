@@ -5,10 +5,12 @@ import commandManagers.RouteManager;
 import commandManagers.commands.*;
 import enums.ReadModes;
 import enums.RequestTypes;
+import multithreading.ThreadManager;
 import util.InputManager;
 
 import java.io.*;
 import java.net.*;
+import java.util.concurrent.*;
 import java.util.logging.Logger;
 
 public class Server {
@@ -72,25 +74,62 @@ public class Server {
                 throw new RuntimeException(e);
             }
 
+            // Executor Services
+            ExecutorService requestGetter = ThreadManager.getRequestExecutor();
+            ForkJoinPool requestExecutor = ThreadManager.getExecuteRequestExecutor();
+            ExecutorService responseSender = ThreadManager.getSendResponseExecutor();
 
-            Response response = listenRequest();
+            // Получение запроса
+            Request request;
 
-            sendResponse(response);
+            Callable<Request> callRequest = this::listenRequest;
+
+            Future<Request> requestFuture = requestGetter.submit(callRequest);
+
+            try {
+                request = requestFuture.get();
+            } catch (InterruptedException e) {
+                logger.severe("Поток чтения запросов прерван");
+                continue;
+            } catch (ExecutionException e) {
+                logger.severe(String.format("В потоке чтения запросов возникла ошибка: %s\n", e.getMessage()));
+                continue;
+            }
+
+            // Обработка запроса и формирование ответа
+            Response response;
+
+            Callable<Response> callResponse = () -> makeResponse(request);
+
+//            Future<Response> responseFuture = requestExecutor.invoke(callResponse);
+            Future<Response> responseFuture = requestExecutor.submit(callResponse);
+
+            try {
+                response = responseFuture.get();
+            } catch (InterruptedException e) {
+                logger.severe("Поток обработки запросов прерван");
+                continue;
+            } catch (ExecutionException e) {
+                logger.severe(String.format("В потоке обработки запросов возникла ошибка: %s\n", e.getMessage()));
+                continue;
+            }
+
+            // Посылка запроса
+            Runnable sendResponse = () -> sendResponse(response);
+
+            responseSender.execute(sendResponse);
 
         }
     }
 
     /**
-     * Ожидает запросы от клиента, после получения выполняет запрос и формирует ответ
+     * Ожидает запросы от клиента
      * Получение запроса с помощью сетевого канала
      *
      * @return response - Возвращаемый ответ от сервера
      */
-    private Response listenRequest() {
-        Response response = null;
+    private Request listenRequest() {
         Request request = null;
-
-        String fileContent = null;
 
         try {
 
@@ -122,6 +161,8 @@ public class Server {
 //            e.printStackTrace();
         }
 
+        String fileContent = null;
+
         if (request != null && request.getFilePath() != null) {
 
             // посылка запроса контента файла, если путь был указан
@@ -137,9 +178,23 @@ public class Server {
             Response clientFileContent = sendResponse(serverResponse);
 
             fileContent = clientFileContent.getMessage();
+
+            request.setFileContent(fileContent);
         }
 
-        // обработка запроса
+        return request;
+    }
+
+    /**
+     * Формирует ответ на запрос, обрабатывая его
+     * @param request - запрос, для которого нужно сформировать ответ
+     * @return нужный ответ на запрос
+     */
+    private Response makeResponse(Request request) {
+
+        String fileContent = request.getFileContent();
+        Response response = null;
+
         try {
             if (request.getType() == RequestTypes.COMMAND) {
                 if (fileContent == null) {
@@ -155,6 +210,7 @@ public class Server {
 
         return response;
     }
+
 
     /**
      * Ожидает ответ от клиента, на отправленный сервером запрос (запросы от сервера - buildRequest или fileRequest)

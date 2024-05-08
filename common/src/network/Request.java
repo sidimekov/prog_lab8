@@ -8,6 +8,8 @@ public abstract class Request implements Serializable {
     private final RequestTypes type;
     private String filePath = null;
 
+    private String fileContent = null;
+
     public Request(RequestTypes type) {
         this.type = type;
         this.filePath = null;
@@ -23,5 +25,13 @@ public abstract class Request implements Serializable {
 
     public void setFilePath(String filePath) {
         this.filePath = filePath;
+    }
+
+    public void setFileContent(String fileContent) {
+        this.fileContent = fileContent;
+    }
+
+    public String getFileContent() {
+        return fileContent;
     }
 }
