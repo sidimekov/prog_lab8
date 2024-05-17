@@ -3,7 +3,10 @@ package entity;
 import util.IdManager;
 
 import java.io.Serial;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 public class Route extends Entity implements Comparable {
     @Serial
@@ -11,10 +14,12 @@ public class Route extends Entity implements Comparable {
     private long id; // Значение поля должно быть больше 0, Значение этого поля должно быть уникальным, Значение этого поля должно генерироваться автоматически
     private String name; //Поле не может быть null, Строка не может быть пустой
     private Coordinates coordinates; //Поле не может быть null
-    private final Date creationDate; //Поле не может быть null, Значение этого поля должно генерироваться автоматически
+    private Date creationDate; //Поле не может быть null, Значение этого поля должно генерироваться автоматически
     private LocationFrom from; //Поле не может быть null
     private LocationTo to; //Поле может быть null
     private double distance; //Значение поля должно быть больше 1
+
+    private final SimpleDateFormat sdf = new SimpleDateFormat("E MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);
 
     public Route(String name, Coordinates coordinates, LocationFrom from, LocationTo to, double distance) {
         this.id = IdManager.getId();
@@ -58,6 +63,14 @@ public class Route extends Entity implements Comparable {
 
     public Date getCreationDate() {
         return creationDate;
+    }
+
+    public void setCreationDate(String creationDate) {
+        try {
+            this.creationDate = sdf.parse(creationDate);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public LocationFrom getFrom() {

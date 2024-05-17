@@ -6,6 +6,7 @@ import java.net.*;
 public class Client {
     private static Client client;
     private DatagramSocket dsClient;
+    private User user;
     public final InetSocketAddress serverSocketAddr = new InetSocketAddress("localhost", 8000);
 
     private Client() {
@@ -145,5 +146,13 @@ public class Client {
 
         return response;
 
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

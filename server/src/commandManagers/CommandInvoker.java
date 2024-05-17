@@ -38,6 +38,8 @@ public class CommandInvoker {
         commands.put("remove_all_by_distance", new RemoveAllByDistanceCommand());
         commands.put("count_greater_than_distance", new CountGreaterThanDistanceCommand());
         commands.put("print_descending", new PrintDescendingCommand());
+        commands.put("register", new RegisterCommand());
+        commands.put("login", new LoginCommand());
     }
 
     public static CommandInvoker getInstance() {
@@ -68,13 +70,6 @@ public class CommandInvoker {
         if (command != null) {
             try {
                 if (args.length > 0) {
-
-//                File file = InputManager.validPath(args[0]);
-//
-//                if (file != null) {
-//                    command.setFilePath(file.getAbsolutePath());
-//                }
-
                     response = command.execute(readMode, args);
                 } else {
                     response = command.execute(readMode, new String[0]);

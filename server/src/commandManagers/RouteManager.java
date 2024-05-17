@@ -2,6 +2,7 @@ package commandManagers;
 
 import builders.RouteBuilder;
 import comparators.RouteComparator;
+import database.DatabaseManager;
 import entity.Coordinates;
 import entity.LocationFrom;
 import entity.LocationTo;
@@ -14,6 +15,7 @@ import util.InputManager;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 // Receiver
@@ -21,6 +23,8 @@ public class RouteManager {
     private PriorityQueue<Route> collection;
     private static RouteManager instance;
     private static Date initializationDate;
+    private static final Logger logger = Server.getLogger();
+    private final DatabaseManager dbManager = new DatabaseManager();
 
     private RouteManager() {
         collection = new PriorityQueue<>();
@@ -50,29 +54,26 @@ public class RouteManager {
     }
 
     public void loadCollection() {
-        String collectionFilePath = InputManager.getCollectionFilePath();
-        if (collectionFilePath == null) {
-            this.collection = new PriorityQueue<>();
-            Server.getLogger().info("Коллекция не была загружена из файла");
-        } else {
-            PriorityQueue<Route> readCollection = JSONManager.readServerCollection(collectionFilePath);
-            if (readCollection != null) {
-                if (checkIdUniqueness()) {
-                    if (readCollection.stream().allMatch(RouteManager::validateElement)) {
-                        this.collection = readCollection;
-                        Server.getLogger().info("Коллекция была загружена из файла");
-                    } else {
-                        Server.getLogger().severe("Ошибка при загрузке из файла: Некоторые элементы из коллекции некорректны");
-                        this.collection = new PriorityQueue<>();
-                    }
+
+        DatabaseManager dbManager = new DatabaseManager();
+        PriorityQueue<Route> collection = dbManager.getCollection();
+
+        if (collection != null) {
+            if (checkIdUniqueness()) {
+                if (collection.stream().allMatch(RouteManager::validateElement)) {
+                    this.collection = collection;
+                    logger.info("Коллекция была загружена из файла");
                 } else {
+                    logger.severe("Ошибка при загрузке из файла: Некоторые элементы из коллекции некорректны");
                     this.collection = new PriorityQueue<>();
-                    Server.getLogger().severe("Ошибка при загрузке из файла: были обнаружены одинаковые id у элементов");
                 }
             } else {
                 this.collection = new PriorityQueue<>();
-                Server.getLogger().severe("Коллекция не была загружена из файла");
+                logger.severe("Ошибка при загрузке из файла: были обнаружены одинаковые id у элементов");
             }
+        } else {
+            this.collection = new PriorityQueue<>();
+            logger.severe("Коллекция не была загружена из файла");
         }
     }
 
@@ -88,16 +89,28 @@ public class RouteManager {
         return (getById(id) != null);
     }
 
-    public void addElement(Route el) throws FailedValidationException {
-        addElement(el, false);
+    public void addElement(Route el, long userId) throws FailedValidationException {
+        addElement(el, userId, false);
     }
 
-    public void addElement(Route el, boolean skipValidations) throws FailedValidationException {
+    public void addElement(Route el, long userId, boolean skipValidations) throws FailedValidationException {
         if (skipValidations) {
-            collection.add(el);
+            long id = dbManager.addRoute(el, userId);
+            if (id != -1) {
+                el.setId(id);
+                collection.add(el);
+            } else {
+                logger.severe("Ошибка с бд при добавлении элемента");
+            }
         } else {
             if (RouteManager.validateElement(el)) {
-                collection.add(el);
+                long id = dbManager.addRoute(el, userId);
+                el.setId(id);
+                if (id != -1) {
+                    collection.add(el);
+                } else {
+                    logger.severe("Ошибка с бд при добавлении элемента");
+                }
             } else {
                 throw new FailedValidationException("Ошибка в валидации");
             }
@@ -108,7 +121,7 @@ public class RouteManager {
         try {
             return RouteBuilder.build(reader, withId);
         } catch (NullPointerException e) {
-            Server.getLogger().severe(String.format("При построении нового объекта произошла ошибка: %s\n", e.getMessage()));
+            logger.severe(String.format("При построении нового объекта произошла ошибка: %s\n", e.getMessage()));
             return null;
         }
     }
@@ -118,19 +131,25 @@ public class RouteManager {
     }
 
     /**
-     * если пользователь не поставил id, то JSONManager выдаёт ему свой, и под условие ниже он не попадает и добавляется
-     * если ввёл id, чтобы заменить элемент с этим id, то прошлый элемент удаляется и новый добавляется
+     * Обновляет элемент в коллекции
+     * @param element - элемент
+     * @param userId - ид владельца элемента
+     * @return id элемента обновлённого, если не получилось, то -1
      */
-    public void update(Route element, boolean skipValidations) throws FailedValidationException {
-        long id = element.getId();
-        if (getIds().contains(id)) {
-            removeElement(id);
+    public long update(Route element, long userId) throws FailedValidationException{
+        if (RouteManager.validateElement(element, true)) {
+            long id = element.getId();
+            long updated = dbManager.updateObject(id, userId, element);
+            if (updated != -1) {
+                removeElement(element.getId());
+                Route newElement = dbManager.getRoute(id);
+                newElement.setId(updated);
+                collection.add(newElement);
+            }
+            return updated;
+        } else {
+            return -1;
         }
-        addElement(element, skipValidations);
-    }
-
-    public void update(Route element) throws FailedValidationException {
-        update(element, false);
     }
 
     public void removeElement(long id) {
@@ -162,18 +181,6 @@ public class RouteManager {
         return collection.stream().min(new RouteComparator()).orElse(null);
     }
 
-
-//    public static PriorityQueue<Route> convertFromArray(Route[] array) {
-//        PriorityQueue<Route> collection = new PriorityQueue<>();
-//        collection.addAll(Arrays.asList(array));
-//        return collection;
-//    }
-//
-//    public static Route[] convertToArray(PriorityQueue<Route> collection) {
-//        return collection.toArray(new Route[0]);
-//    }
-
-
     /**
      * Конвертировать лист в коллекцию
      *
@@ -192,51 +199,57 @@ public class RouteManager {
     }
 
     public static boolean validateElement(Route el) {
-        if (!checkId(el.getId())) {
-            Server.getLogger().warning("Неверный id (возможно, он уже занят)");
-            return false;
+        return validateElement(el, false);
+    }
+
+    public static boolean validateElement(Route el, boolean idSkip) {
+        if (!idSkip) {
+            if (!checkId(el.getId())) {
+                logger.warning("Неверный id (возможно, он уже занят)");
+                return false;
+            }
         }
 
         if (!Route.checkName(el.getName())) {
-            Server.getLogger().warning("Неверное имя элемента (Поле не может быть null, Строка не может быть пустой)");
+            logger.warning("Неверное имя элемента (Поле не может быть null, Строка не может быть пустой)");
             return false;
         }
 
         if (!Route.checkCreationDate(el.getCreationDate())) {
-            Server.getLogger().warning("Неверная дата создания (Поле не может быть null)");
+            logger.warning("Неверная дата создания (Поле не может быть null)");
             return false;
         }
 
         Coordinates coordinates = el.getCoordinates();
         if (!Route.checkCoordinates(coordinates)) {
-            Server.getLogger().warning("Некорректные координаты (Поле не может быть null)");
+            logger.warning("Некорректные координаты (Поле не может быть null)");
             return false;
         }
         if (!Coordinates.checkX(coordinates.getX()) || !Coordinates.checkY(coordinates.getY())) {
-            Server.getLogger().warning("Некорректные координаты (x: Максимальное значение поля: 790, y: Значение поля должно быть больше -858, Поле не может быть null");
+            logger.warning("Некорректные координаты (x: Максимальное значение поля: 790, y: Значение поля должно быть больше -858, Поле не может быть null");
             return false;
         }
 
         LocationFrom from = el.getFrom();
         if (!Route.checkFrom(from)) {
-            Server.getLogger().warning("Некорректная изначальная локация (Поле не может быть null)");
+            logger.warning("Некорректная изначальная локация (Поле не может быть null)");
             return false;
         }
         if (!LocationFrom.checkY(from.getY())) {
-            Server.getLogger().warning("Некорректная изначальная локация (y: Поле не может быть null");
+            logger.warning("Некорректная изначальная локация (y: Поле не может быть null");
             return false;
         }
 
         LocationTo to = el.getTo();
         if (to != null) {
             if (!LocationTo.checkY(to.getY()) || !LocationTo.checkName(to.getName())) {
-                Server.getLogger().warning("Некорректная окончательная локация (y: Поле не может быть null, name: Длина строки не должна быть больше 443, Поле не может быть null)");
+                logger.warning("Некорректная окончательная локация (y: Поле не может быть null, name: Длина строки не должна быть больше 443, Поле не может быть null)");
                 return false;
             }
         }
 
         if (!Route.checkDistance(el.getDistance())) {
-            Server.getLogger().warning("Некорректная дистанция (Значение поля должно быть больше 1)");
+            logger.warning("Некорректная дистанция (Значение поля должно быть больше 1)");
             return false;
         }
 
@@ -286,6 +299,17 @@ public class RouteManager {
         }
     }
 
+//    /** Удаляет все объекты, созданные заданным id пользователя
+//     *
+//     * @param userId - id пользователя
+//     * @return true, если успешно, false - если не удалось найти объекты
+//     */
+//    public boolean clearUserObjects(long userId) {
+//        PriorityQueue<Route> coll = getCollection();
+//        return false;
+//    }
+
+    @Deprecated
     public void saveCollection(String path) {
         String jsonContent = JSONManager.collectionToJson();
         InputManager.write(path, jsonContent);

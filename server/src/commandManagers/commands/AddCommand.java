@@ -9,7 +9,6 @@ import input.JSONManager;
 import network.Response;
 import util.InputManager;
 
-import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Serial;
@@ -21,6 +20,7 @@ public class AddCommand extends Command {
     private String DESC = "добавить новый элемент в коллекцию";
 
     private String jsonContent;
+//    private long userId;
 
     @Override
     public Response execute(ReadModes readMode, String[] args) {
@@ -33,7 +33,7 @@ public class AddCommand extends Command {
 
                     Route element = RouteManager.buildNew(reader); // если с консоли
 
-                    rm.addElement(element, true);
+                    rm.addElement(element, sender.getId(), true);
 
                 } catch (IOException e) {
                     return new Response(String.format("Ошибка при добавлении в коллекцию: %s\n", e.getMessage()));
@@ -47,7 +47,7 @@ public class AddCommand extends Command {
                 try {
                     Route element = JSONManager.readElement(jsonContent);
                     jsonContent = null;
-                    RouteManager.getInstance().addElement(element);
+                    RouteManager.getInstance().addElement(element, sender.getId());
                 } catch (FailedValidationException | FailedJSONReadException e) {
 //                    e.printStackTrace();
                     return new Response(String.format("Ошибка при добавлении в коллекцию: %s\n", e.getMessage()));

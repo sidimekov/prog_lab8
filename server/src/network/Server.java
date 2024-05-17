@@ -57,14 +57,10 @@ public class Server {
                     String line = reader.readLine();
                     switch (line) {
                         case "save" -> {
-                            RouteManager.getInstance().saveCollection(InputManager.getCollectionFilePath());
-
-                            logger.info("Коллекция сохранена");
+                            logger.info("Коллекция сохраняется автоматически");
                         }
                         case "exit" -> {
-                            logger.info("Давай пока до связи, коллекцию сохранил");
-
-                            RouteManager.getInstance().saveCollection(InputManager.getCollectionFilePath());
+                            logger.info("До связи");
 
                             System.exit(0);
                         }
@@ -269,6 +265,18 @@ public class Server {
 
         CommandInvoker cmdInvoker = CommandInvoker.getInstance();
         Command command = cmdInvoker.getCommand(cmdName);
+
+        if (request.getUser() == null && !cmdName.equals("register") && !cmdName.equals("login")) {
+            response = new Response("Авторизируйтесь!");
+            logger.warning("Пользователь не авторизован...");
+            return response;
+        }
+
+        User user = request.getUser();
+        if (user != null) {
+            logger.info(String.format("Пользователь: %s", user));
+            command.setSender(user);
+        }
 
         if (request.getFilePath() != null && fileContent != null) {
             switch (cmdName) {

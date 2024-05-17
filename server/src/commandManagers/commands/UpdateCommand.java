@@ -18,6 +18,7 @@ public class UpdateCommand extends Command {
     private static String DESC = "обновить значение элемента коллекции, id которого равен заданному";
 
     private String jsonContent;
+
     @Override
     public Response execute(ReadModes readMode, String[] args) {
         RouteManager rm = RouteManager.getInstance();
@@ -27,7 +28,7 @@ public class UpdateCommand extends Command {
                 try {
                     BufferedReader reader = InputManager.getConsoleReader();
                     Route element = RouteManager.buildNew(reader, true);
-                    rm.update(element, true); // если с консоли, уже отвалидировано
+                    rm.update(element, sender.getId()); // если с консоли, уже отвалидировано
                 } catch (IOException e) {
                     return new Response(e.getMessage());
                 }
@@ -40,7 +41,7 @@ public class UpdateCommand extends Command {
                 try {
                     Route element = JSONManager.readElement(jsonContent);
                     jsonContent = null;
-                    rm.update(element);
+                    rm.update(element, sender.getId());
                 } catch (FailedValidationException | FailedJSONReadException e) {
                     return new Response(e.getMessage());
                 }
@@ -58,6 +59,7 @@ public class UpdateCommand extends Command {
     public void setJsonContent(String jsonContent) {
         this.jsonContent = jsonContent;
     }
+
 
     @Override
     public String getDesc() {

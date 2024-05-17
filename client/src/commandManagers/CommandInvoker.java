@@ -16,6 +16,9 @@ import java.util.Arrays;
 public class CommandInvoker {
     private static CommandInvoker instance;
 
+    private final int MAX_RECONNECTION_ATTEMPTS = 10;
+    private int reconnectionTimeout;
+
     private CommandInvoker() {
     }
 
@@ -51,6 +54,7 @@ public class CommandInvoker {
 
             Client client = Client.getInstance();
             CommandRequest request = new CommandRequest(cmdName, args);
+            request.setUser(Client.getInstance().getUser());
             request.setReadMode(readMode);
 
             if (args.length > 0) {
@@ -65,34 +69,60 @@ public class CommandInvoker {
 
             Response response;
 
-            response = client.sendRequest(request, serverSocketAddr.getAddress(), serverSocketAddr.getPort());
+            for (int i = 0; i < MAX_RECONNECTION_ATTEMPTS; i++) {
 
-            while (response.hasResponseRequest()) {
+                response = client.sendRequest(request, serverSocketAddr.getAddress(), serverSocketAddr.getPort());
+
+                try {
+                    switch (cmdName) {
+                        case "register", "login" -> {
+                            User user = response.getUser();
+
+                            if (user != null) {
+                                client.setUser(user);
+                            }
+                        }
+                    }
+
+
+                    while (response.hasResponseRequest()) {
 //                System.out.println(response);
 
-                if (response.getMessage() != null) {
+                        if (response.getMessage() != null) {
+                            System.out.println(response.getMessage());
+                        }
+                        // Если сервер при посылке ответа, послал запрос (например передать элемент)
+
+                        Request req = response.getResponseRequest();
+                        switch (req.getType()) {
+                            case BUILD -> {
+                                BuildRequest buildRequest = (BuildRequest) req;
+                                handleRequest(buildRequest);
+                            }
+                            case FILE -> {
+                                FileRequest fileRequest = (FileRequest) req;
+                                handleRequest(fileRequest);
+                            }
+                            case MESSAGE -> System.out.println(((MessageRequest) req).getMessage());
+                        }
+
+                        response = client.listenResponse(serverSocketAddr.getAddress(), serverSocketAddr.getPort());
+                    }
+
                     System.out.println(response.getMessage());
-                }
-                // Если сервер при посылке ответа, послал запрос (например передать элемент)
 
-                Request req = response.getResponseRequest();
-                switch (req.getType()) {
-                    case BUILD -> {
-                        BuildRequest buildRequest = (BuildRequest) req;
-                        handleRequest(buildRequest);
-                    }
-                    case FILE -> {
-                        FileRequest fileRequest = (FileRequest) req;
-                        handleRequest(fileRequest);
-                    }
-                    case MESSAGE -> System.out.println(((MessageRequest) req).getMessage());
-                }
+                    break;
 
-                response = client.listenResponse(serverSocketAddr.getAddress(), serverSocketAddr.getPort());
+                } catch (NullPointerException e) {
+                    reconnectionTimeout = (i + 1) * 5000;
+                    System.out.printf("Не удалось подключиться к серверу! Повторная попытка через %s секунд", reconnectionTimeout/100);
+                    try {
+                        Thread.sleep(reconnectionTimeout);
+                    } catch (InterruptedException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
             }
-
-            System.out.println(response.getMessage());
-
         } else {
             System.out.println("Пустая команда!");
         }

@@ -20,6 +20,7 @@ public class AddIfMinCommand extends Command {
     public static final String DESC = "добавить новый элемент в коллекцию, если его значение меньше, чем у наименьшего элемента этой коллекции";
 
     private String jsonContent;
+
     @Override
     public Response execute(ReadModes readMode, String[] args) {
         RouteManager rm = RouteManager.getInstance();
@@ -53,7 +54,7 @@ public class AddIfMinCommand extends Command {
 
 
         if (minElement == null || element.compareTo(minElement) < 0) {
-            rm.addElement(element, true);
+            rm.addElement(element, sender.getId(), true);
             return new Response("Минимальный элемент добавлен в коллекцию");
         } else {
             return new Response("Указанный элемент не будет самым минимальным");

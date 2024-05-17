@@ -10,6 +10,7 @@ public class Response implements Serializable {
     private static final long serialVersionUID = -1202337532505101798L;
     private String message;
     private Request responseRequest;
+    private User user;
     // вместо isFinal проверка на null реквеста
 
     public Response(Request responseRequest) {
@@ -46,5 +47,13 @@ public class Response implements Serializable {
                 "message='" + message + '\'' +
                 ", responseRequest=" + responseRequest +
                 '}';
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public User getUser() {
+        return user;
     }
 }
