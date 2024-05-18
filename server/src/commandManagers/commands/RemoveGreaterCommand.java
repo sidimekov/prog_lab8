@@ -41,11 +41,9 @@ public class RemoveGreaterCommand extends Command {
             }
         }
 
-        rm.getCollection()
-                .stream()
-                .filter(element -> (element.compareTo(inpElement) > 0))
-                .forEach(element -> rm.removeElement(element.getId()));
-        return new Response("Все элементы, превосходящие введённый, удалены");
+        rm.removeGreater(inpElement, sender.getId());
+
+        return new Response("Все ваши элементы, превосходящие введённый, удалены");
     }
 
     public String getJsonContent() {

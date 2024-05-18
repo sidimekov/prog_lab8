@@ -24,7 +24,7 @@ public class AddIfMinCommand extends Command {
     @Override
     public Response execute(ReadModes readMode, String[] args) {
         RouteManager rm = RouteManager.getInstance();
-        Route minElement = rm.getMinElement();
+        Route minElement = rm.getMinElement(sender.getId());
         Route element;
         if (args.length == 0) {
 

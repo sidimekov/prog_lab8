@@ -16,8 +16,12 @@ public class ClearCommand extends Command {
     @Override
     public Response execute(ReadModes readMode, String[] args) {
         RouteManager rm = RouteManager.getInstance();
-        rm.getCollection().clear();
-        return new Response("Коллекция очищена");
+        boolean cleared = rm.clearUserObjects(sender.getId());
+        if (cleared) {
+            return new Response("Коллекция очищена");
+        } else {
+            return new Response("Произошла ошибка при очищении вашей коллекции");
+        }
     }
 
     @Override

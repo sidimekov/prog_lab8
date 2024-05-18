@@ -16,8 +16,12 @@ public class RemoveAllByDistanceCommand extends Command {
             double distance;
             try {
                 distance = Double.parseDouble(args[0]);
-                rm.removeAllByDistance(distance);
-                return new Response(String.format("Все элементы с дистанцией %s удалены\n", distance));
+                try {
+                    rm.removeAllByDistance(distance, sender.getId());
+                } catch (RuntimeException e) {
+                    return  new Response("Не удалось удалить объекты с указанной дистанцией");
+                }
+                return new Response(String.format("Все ваши элементы с дистанцией %s удалены\n", distance));
             } catch (NumberFormatException e) {
                 return new Response("Некорректная дистанция");
             }

@@ -272,6 +272,12 @@ public class Server {
             return response;
         }
 
+        if (command == null) {
+            response = new Response("Указанной команды не существует!");
+            logger.warning("Такой команды не существует, отправка ответа клиенту...");
+            return response;
+        }
+
         User user = request.getUser();
         if (user != null) {
             logger.info(String.format("Пользователь: %s", user));
@@ -308,13 +314,8 @@ public class Server {
             }
         }
 
-        if (command == null) {
-            response = new Response("Указанной команды не существует!");
-            logger.warning("Такой команды не существует, отправка ответа клиенту...");
-        } else {
-            response = cmdInvoker.runCommand(command, args, readMode);
-            logger.info(String.format("Команда %s выполнена, отправка ответа клиенту...\n", cmdName));
-        }
+        response = cmdInvoker.runCommand(command, args, readMode);
+        logger.info(String.format("Команда %s выполнена, отправка ответа клиенту...\n", cmdName));
 
         return response;
     }

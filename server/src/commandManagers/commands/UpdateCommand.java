@@ -5,6 +5,7 @@ import entity.Route;
 import enums.ReadModes;
 import exceptions.FailedJSONReadException;
 import exceptions.FailedValidationException;
+import exceptions.NoAccessToObjectException;
 import input.JSONManager;
 import network.Response;
 import util.InputManager;
@@ -24,14 +25,23 @@ public class UpdateCommand extends Command {
         RouteManager rm = RouteManager.getInstance();
         if (args.length == 0) {
             // если нет аргументов, то нужно построить из консоли, значит если файл то бан
+
+            long updated;
             if (readMode == ReadModes.CONSOLE) {
                 try {
                     BufferedReader reader = InputManager.getConsoleReader();
                     Route element = RouteManager.buildNew(reader, true);
-                    rm.update(element, sender.getId()); // если с консоли, уже отвалидировано
+                    updated = rm.update(element, sender.getId()); // если с консоли, уже отвалидировано
                 } catch (IOException e) {
                     return new Response(e.getMessage());
+                } catch (NoAccessToObjectException e) {
+                    return new Response("Нет доступа к этому элементу");
                 }
+
+                if (updated == -1) {
+                    return new Response("Во время обновления произошла ошибка. Возможно не найден указанный id элемента");
+                }
+
             } else {
                 return new Response(String.format("Некорректные аргументы, использование: %s\n", USAGE));
             }
@@ -44,6 +54,8 @@ public class UpdateCommand extends Command {
                     rm.update(element, sender.getId());
                 } catch (FailedValidationException | FailedJSONReadException e) {
                     return new Response(e.getMessage());
+                } catch (NoAccessToObjectException e) {
+                    return new Response("Нет доступа к этому элементу");
                 }
             } else {
                 return new Response("Файл не найден / был пуст");

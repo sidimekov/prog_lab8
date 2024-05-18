@@ -15,7 +15,7 @@ public class CountGreaterThanDistanceCommand extends Command {
             double distance;
             try {
                 distance = Double.parseDouble(args[0]);
-                return new Response(String.format("Количество элементов с дистанцией выше введённой: %s\n", rm.countGreaterThanDistance(distance)));
+                return new Response(String.format("Количество элементов с дистанцией выше введённой: %s\n", rm.countGreaterThanDistance(distance, sender.getId())));
             } catch (NumberFormatException e) {
                 return new Response(String.format("Некорректные аргументы: использование: %s\n", USAGE));
             }

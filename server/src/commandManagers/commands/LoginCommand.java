@@ -3,7 +3,6 @@ package commandManagers.commands;
 import database.DatabaseManager;
 import enums.ReadModes;
 import network.Response;
-import network.Server;
 import network.User;
 
 import java.io.Serial;

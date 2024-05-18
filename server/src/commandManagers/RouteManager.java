@@ -8,6 +8,7 @@ import entity.LocationFrom;
 import entity.LocationTo;
 import entity.Route;
 import exceptions.FailedValidationException;
+import exceptions.NoAccessToObjectException;
 import input.JSONManager;
 import network.Server;
 import util.InputManager;
@@ -77,6 +78,14 @@ public class RouteManager {
         }
     }
 
+    public PriorityQueue<Route> getDBCollection(Long userId) {
+        return dbManager.getCollection(userId);
+    }
+
+    public PriorityQueue<Route> getDBCollection() {
+        return dbManager.getCollection();
+    }
+
     public PriorityQueue<Route> getCollection() {
         return collection;
     }
@@ -132,19 +141,24 @@ public class RouteManager {
 
     /**
      * Обновляет элемент в коллекции
+     *
      * @param element - элемент
-     * @param userId - ид владельца элемента
+     * @param userId  - ид владельца элемента
      * @return id элемента обновлённого, если не получилось, то -1
      */
-    public long update(Route element, long userId) throws FailedValidationException{
+    public long update(Route element, long userId) throws FailedValidationException, NoAccessToObjectException {
         if (RouteManager.validateElement(element, true)) {
             long id = element.getId();
+
             long updated = dbManager.updateObject(id, userId, element);
+
             if (updated != -1) {
-                removeElement(element.getId());
+                localRemove(id);
                 Route newElement = dbManager.getRoute(id);
                 newElement.setId(updated);
                 collection.add(newElement);
+            } else {
+                logger.severe("Произошла ошибка при обновлении объекта, возможно id не найден");
             }
             return updated;
         } else {
@@ -152,15 +166,50 @@ public class RouteManager {
         }
     }
 
-    public void removeElement(long id) {
-        removeElement(getById(id));
+
+    /**
+     * Удаляет указанный объект указанного пользователя
+     *
+     * @param route  - объект
+     * @param userId - id пользователя
+     * @return false, если объект не найден / произошла ошибка, иначе true
+     * @throws NoAccessToObjectException - нет доступа к объекту
+     */
+    public boolean removeElement(Route route, long userId) throws NoAccessToObjectException {
+        DatabaseManager dbManager = new DatabaseManager();
+
+        boolean removed = dbManager.removeObject(route.getId(), userId);
+
+        if (removed) {
+            List<Route> list = convertToList(collection);
+            list.remove(route);
+            collection = convertFromList(list);
+        }
+        return removed;
     }
 
-    public void removeElement(Route route) {
+    public boolean removeElement(long id, long userId) throws NoAccessToObjectException {
+        return removeElement(getById(id), userId);
+    }
+
+    private void localRemove(Route route) {
         List<Route> list = convertToList(collection);
         list.remove(route);
         collection = convertFromList(list);
     }
+
+    private void localRemove(long id) {
+        localRemove(getById(id));
+    }
+
+    private boolean forceRemove(Route route) {
+        try {
+            return dbManager.removeObject(route.getId());
+        } catch (NoAccessToObjectException e) {
+            return false;
+        }
+    }
+
 
     public List<Long> getIds() {
         return collection.stream().map(Route::getId).collect(Collectors.toList());
@@ -177,8 +226,13 @@ public class RouteManager {
         return (idSet.size() == ids.size());
     }
 
-    public Route getMinElement() {
-        return collection.stream().min(new RouteComparator()).orElse(null);
+    public Route getMinElement(Long userId) {
+        if (userId != null) {
+            PriorityQueue<Route> userColl = getDBCollection(userId);
+            return userColl.stream().min(new RouteComparator()).orElse(null);
+        } else {
+            return collection.stream().min(new RouteComparator()).orElse(null);
+        }
     }
 
     /**
@@ -256,16 +310,14 @@ public class RouteManager {
         return true;
     }
 
-    public void removeAllByDistance(double distance) {
-//        collection
-//                .stream()
-//                .filter(el -> (el.getDistance() == distance))
-//                .forEach(el -> commandManagers.RouteManager.getInstance().getCollection().remove(el));
-        collection.removeIf(el -> (el.getDistance() == distance));
+    public void removeAllByDistance(double distance, long userId) {
+        PriorityQueue<Route> userColl = getDBCollection(userId);
+        userColl.stream().filter(el -> (el.getDistance() == distance)).forEach(this::forceRemove);
     }
 
-    public long countGreaterThanDistance(double distance) {
-        return collection
+    public long countGreaterThanDistance(double distance, long userId) {
+        PriorityQueue<Route> userColl = getDBCollection(userId);
+        return userColl
                 .stream()
                 .filter(el -> (el.getDistance() > distance))
                 .count();
@@ -299,15 +351,36 @@ public class RouteManager {
         }
     }
 
-//    /** Удаляет все объекты, созданные заданным id пользователя
-//     *
-//     * @param userId - id пользователя
-//     * @return true, если успешно, false - если не удалось найти объекты
-//     */
-//    public boolean clearUserObjects(long userId) {
-//        PriorityQueue<Route> coll = getCollection();
-//        return false;
-//    }
+    public void removeGreater(Route route, long userId) {
+        getCollection()
+                .stream()
+                .filter(element -> (element.compareTo(route) > 0))
+                .forEach(element -> {
+                    try {
+                        removeElement(element.getId(), userId);
+                    } catch (NoAccessToObjectException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+    }
+
+    public boolean removeFirst(long userId) throws NoAccessToObjectException {
+        boolean removed = false;
+        if (!collection.isEmpty()) {
+            long firstId = getCollection().element().getId();
+            removed = removeElement(firstId, userId);
+        }
+        return removed;
+    }
+
+    /** Удаляет все объекты, созданные заданным id пользователя
+     *
+     * @param userId - id пользователя
+     * @return true, если успешно, false - если не удалось найти объекты
+     */
+    public boolean clearUserObjects(long userId) {
+        return dbManager.clearObjects(userId);
+    }
 
     @Deprecated
     public void saveCollection(String path) {

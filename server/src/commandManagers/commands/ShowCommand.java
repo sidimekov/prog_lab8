@@ -15,7 +15,7 @@ public class ShowCommand extends Command {
     @Override
     public Response execute(ReadModes readMode, String[] args) {
         RouteManager rm = RouteManager.getInstance();
-        PriorityQueue<Route> collection = rm.getCollection();
+        PriorityQueue<Route> collection = rm.getDBCollection(sender.getId());
         String response = RouteManager.returnCollection(collection);
         return new Response(response);
     }

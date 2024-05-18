@@ -4,13 +4,13 @@ import entity.Coordinates;
 import entity.LocationFrom;
 import entity.LocationTo;
 import entity.Route;
+import exceptions.NoAccessToObjectException;
 import network.Server;
 import network.User;
 import util.HashManager;
 
 import java.sql.*;
 import java.util.*;
-import java.util.Date;
 import java.util.logging.Logger;
 
 public class DatabaseManager {
@@ -158,21 +158,23 @@ public class DatabaseManager {
         }
     }
 
-    public boolean deleteUserObjects(User user, List<Long> ids) {
+    /**
+     * Удаляет объекты одного пользователя
+     *
+     * @param userId - id пользователя
+     * @return true, если успешно, иначе false
+     */
+    public boolean clearObjects(Long userId) {
         Connection connection = connect();
         try {
             if (connection != null) {
-                for (Long id : ids) {
-                    PreparedStatement preparedStatement = connection.prepareStatement(QueryManager.CLEAR_OBJECTS);
-                    preparedStatement.setString(1, user.getLogin());
-                    preparedStatement.setLong(2, id);
-                    ResultSet resultSet = preparedStatement.executeQuery();
+                PreparedStatement statement;
+                statement = connection.prepareStatement(QueryManager.CLEAR_USER_OBJECTS);
+                statement.setLong(1, userId);
+                ResultSet resultSet = statement.executeQuery();
 
-                    connection.close();
-                    return resultSet.next();
-                }
                 connection.close();
-                return false;
+                return true;
             } else {
                 logger.severe("Подключение - null");
                 return false;
@@ -182,16 +184,57 @@ public class DatabaseManager {
         }
     }
 
-    public boolean deleteObject(Long id) {
+    /**
+     * Удаляет объект с указанным id от лица пользователя указанного userId
+     * Если userId == null, то принудительно удаляет объект
+     * Если userId != null, то проверяет, имеет ли пользователь с указанным userId удалять указанный объект
+     *
+     * @param id     - указанный id объекта
+     * @param userId - userId пользователя
+     * @return true, если успешно, иначе false
+     * @throws NoAccessToObjectException - нет прав к удалению
+     */
+    public boolean removeObject(long id, Long userId) throws NoAccessToObjectException {
         Connection connection = connect();
         try {
             if (connection != null) {
-                PreparedStatement preparedStatement = connection.prepareStatement(QueryManager.DELETE_OBJECT);
-                preparedStatement.setLong(1, id);
-//                preparedStatement.setString(1, user.getLogin());
-                ResultSet resultSet = preparedStatement.executeQuery();
+
+                long existingRouteUserId = -1;
+                PreparedStatement statement;
+
+                if (userId != null) {
+
+                    // 1) проверка, есть ли такой объект уже в списке
+                    // 2) если есть, то этот объект должен иметь указанный user_id, и он удаляется
+
+                    PreparedStatement getObject = connection.prepareStatement(QueryManager.GET_OBJECT);
+                    getObject.setLong(1, id);
+
+                    ResultSet getObjectSet = getObject.executeQuery();
+                    while (getObjectSet.next()) {
+                        // нужен id пользователя для проверки, что объект который удаляем - его
+                        existingRouteUserId = getObjectSet.getLong(14);
+                    }
+
+                    if (existingRouteUserId != -1) {
+
+                        statement = connection.prepareStatement(QueryManager.REMOVE_USER_OBJECT);
+                        statement.setLong(1, id);
+                        statement.setLong(2, userId);
+
+                    } else {
+                        throw new NoAccessToObjectException(String.format("Нет доступа к элементу с таким id (ид элемента %s, указанный id пользователя %s)", id, userId));
+                    }
+                } else {
+                    statement = connection.prepareStatement(QueryManager.REMOVE_OBJECT);
+                    statement.setLong(1, id);
+                }
+
+
+                ResultSet resultSet = statement.executeQuery();
                 connection.close();
                 return resultSet.next();
+
             } else {
                 logger.severe("Подключение - null");
                 return false;
@@ -202,33 +245,74 @@ public class DatabaseManager {
 
     }
 
-    public long updateObject(Long id, long userId, Route route) {
+    public boolean removeObject(long id) throws NoAccessToObjectException {
+        return removeObject(id, null);
+    }
+
+    /**
+     * Обновляет объект в БД
+     *
+     * @param id     - id объекта
+     * @param userId - id пользователя
+     * @param route  - элемент на который заменить
+     * @return -1, если объект не найден / произошла ошибка. Иначе id обновлённого/добавленного объекта
+     * @throws NoAccessToObjectException - Нет доступа к объекту с указанным id
+     */
+    public long updateObject(Long id, long userId, Route route) throws NoAccessToObjectException {
         Connection connection = connect();
         try {
             if (connection != null) {
-                PreparedStatement preparedStatement = connection.prepareStatement(QueryManager.UPDATE_OBJECT);
-                preparedStatement.setString(1, route.getName());
-                preparedStatement.setString(2, route.getCreationDate().toString());
-                preparedStatement.setDouble(3, route.getCoordinates().getX());
-                preparedStatement.setInt(4, route.getCoordinates().getY());
-                preparedStatement.setInt(5, route.getFrom().getX());
-                preparedStatement.setInt(6, route.getFrom().getY());
-                preparedStatement.setFloat(7, route.getFrom().getZ());
-                preparedStatement.setString(8, route.getTo().getName());
-                preparedStatement.setFloat(9, route.getTo().getX());
-                preparedStatement.setInt(10, route.getTo().getY());
-                preparedStatement.setLong(11, route.getTo().getZ());
-                preparedStatement.setDouble(12, route.getDistance());
-                preparedStatement.setLong(13, id);
-                preparedStatement.setLong(14, userId);
-                ResultSet resultSet = preparedStatement.executeQuery();
-                connection.close();
+                // 1) проверка, есть ли такой объект уже в списке
+                // 2) если есть, то этот объект должен иметь указанный user_id, и он обновляется
 
-                long updated = -1;
-                while (resultSet.next()) {
-                    updated = resultSet.getInt(1);
+                long existingRouteUserId = -1;
+
+                PreparedStatement getObject = connection.prepareStatement(QueryManager.GET_OBJECT);
+                getObject.setLong(1, route.getId());
+
+                ResultSet getObjectSet = getObject.executeQuery();
+                while (getObjectSet.next()) {
+                    // нужен id пользователя для проверки, что объект который обновляем - его
+                    existingRouteUserId = getObjectSet.getLong(14);
                 }
-                return updated;
+
+                if (existingRouteUserId != -1) {
+
+                    if (existingRouteUserId == userId) {
+
+                        PreparedStatement preparedStatement = connection.prepareStatement(QueryManager.UPDATE_OBJECT);
+                        preparedStatement.setString(1, route.getName());
+                        preparedStatement.setString(2, route.getCreationDate().toString());
+                        preparedStatement.setDouble(3, route.getCoordinates().getX());
+                        preparedStatement.setInt(4, route.getCoordinates().getY());
+                        preparedStatement.setInt(5, route.getFrom().getX());
+                        preparedStatement.setInt(6, route.getFrom().getY());
+                        preparedStatement.setFloat(7, route.getFrom().getZ());
+                        preparedStatement.setString(8, route.getTo().getName());
+                        preparedStatement.setFloat(9, route.getTo().getX());
+                        preparedStatement.setInt(10, route.getTo().getY());
+                        preparedStatement.setLong(11, route.getTo().getZ());
+                        preparedStatement.setDouble(12, route.getDistance());
+                        preparedStatement.setLong(13, id);
+                        preparedStatement.setLong(14, userId);
+                        ResultSet resultSet = preparedStatement.executeQuery();
+                        connection.close();
+
+                        long updated = -1;
+                        while (resultSet.next()) {
+                            updated = resultSet.getInt(1);
+                        }
+                        return updated;
+
+                    } else {
+                        throw new NoAccessToObjectException(String.format("Нет доступа к элементу с таким id (ид элемента %s, указанный id пользователя %s)", route.getId(), userId));
+                    }
+
+                } else {
+                    logger.info("При команде update не найден элемент с указанным id");
+
+                    return -1;
+                }
             } else {
                 logger.severe("Подключение - null");
 
@@ -262,13 +346,25 @@ public class DatabaseManager {
         return route;
     }
 
-    public PriorityQueue<Route> getCollection() {
+    /**
+     * Получить коллекцию всех пользователей / одного пользователя
+     *
+     * @param userId - id пользователя / null
+     * @return коллекцию всех пользователей, если userId == null, иначе коллекцию заданного пользователя
+     */
+    public PriorityQueue<Route> getCollection(Long userId) {
         Connection connection = connect();
         PriorityQueue<Route> routeCollection = new PriorityQueue<>();
         try {
             if (connection != null) {
-                PreparedStatement preparedStatement = connection.prepareStatement(QueryManager.GET_OBJECTS);
-                ResultSet resultSet = preparedStatement.executeQuery();
+                PreparedStatement statement;
+                if (userId == null) {
+                    statement = connection.prepareStatement(QueryManager.GET_OBJECTS);
+                } else {
+                    statement = connection.prepareStatement(QueryManager.GET_USER_OBJECTS);
+                    statement.setLong(1, userId);
+                }
+                ResultSet resultSet = statement.executeQuery();
                 while (resultSet.next()) {
                     Route route = parseRoute(resultSet);
                     route.setId(resultSet.getLong(1));
@@ -286,6 +382,10 @@ public class DatabaseManager {
             logger.severe("Ошибка выполнения запроса");
             return null;
         }
+    }
+
+    public PriorityQueue<Route> getCollection() {
+        return getCollection(null);
     }
 
     private Route parseRoute(ResultSet resultSet) throws SQLException {

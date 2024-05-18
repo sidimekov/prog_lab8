@@ -2,6 +2,7 @@ package commandManagers.commands;
 
 import commandManagers.RouteManager;
 import enums.ReadModes;
+import exceptions.NoAccessToObjectException;
 import network.Response;
 
 public class RemoveByIdCommand extends Command {
@@ -11,6 +12,7 @@ public class RemoveByIdCommand extends Command {
     @Override
     public Response execute(ReadModes readMode, String[] args) {
         RouteManager rm = RouteManager.getInstance();
+        boolean removed;
         if (args.length == 1) {
             long id;
             try {
@@ -19,14 +21,22 @@ public class RemoveByIdCommand extends Command {
                 return new Response(String.format("Некорректные аргументы, используйте: %s\n", USAGE));
             }
             if (rm.hasElement(id)) {
-                rm.removeElement(id);
+                try {
+                    removed = rm.removeElement(id, sender.getId());
+                } catch (NoAccessToObjectException e) {
+                    return new Response("Нет доступа к объекту с таким id");
+                }
             } else {
                 return new Response("Нет элемента с таким id");
             }
         } else {
             return new Response(String.format("Некорректные аргументы, используйте: %s\n", USAGE));
         }
-        return new Response("Элемент удалён");
+        if (removed) {
+            return new Response("Элемент удалён");
+        } else {
+            return new Response("Не удалось удалить элемент");
+        }
     }
 
     @Override

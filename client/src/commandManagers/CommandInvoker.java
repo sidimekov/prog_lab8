@@ -82,6 +82,11 @@ public class CommandInvoker {
                                 client.setUser(user);
                             }
                         }
+                        case "logout" -> {
+                            client.setUser(null);
+                            System.out.println("Вы вышли из аккаунта. Авторизирутейсь (login <логин> <пароль>) или зарегистрируйтесь (register <логин> <пароль> <подтверждение пароля>)");
+                            return;
+                        }
                     }
 
 
@@ -115,7 +120,8 @@ public class CommandInvoker {
 
                 } catch (NullPointerException e) {
                     reconnectionTimeout = (i + 1) * 5000;
-                    System.out.printf("Не удалось подключиться к серверу! Повторная попытка через %s секунд", reconnectionTimeout/100);
+                    System.out.printf("Не удалось подключиться к серверу! Повторная попытка через %s секунд\n", reconnectionTimeout/1000);
+                    System.out.println(e.getMessage());
                     try {
                         Thread.sleep(reconnectionTimeout);
                     } catch (InterruptedException ex) {
