@@ -2,8 +2,10 @@ package commandManagers.commands;
 
 import commandManagers.CommandInvoker;
 import enums.ReadModes;
+import network.CommandRequest;
 import network.Response;
 import network.Server;
+import util.InputManager;
 
 import java.io.*;
 import java.util.StringJoiner;
@@ -31,9 +33,17 @@ public class ExecuteScriptCommand extends Command {
                             invoker.scriptCount();
                         }
                         if (invoker.getScriptCounter() < invoker.SCRIPT_RECURSION_LIMIT) {
-                            Response cmdResponse = invoker.runCommand(line, ReadModes.FILE);
+                            CommandRequest req = invoker.createRequest(line, ReadModes.FILE, sender);
+
+                            Response response = server.handleRequest(req, req.getFileContent());
+
+                            if (response != null) {
+                                while (response.hasResponseRequest()) {
+                                    response = server.listenResponse();
+                                }
 //                            System.out.println(cmdResponse.toString());
-                            totalResponse.add(cmdResponse.getMessage());
+                                totalResponse.add(response.getMessage());
+                            }
                         } else {
                             // чтоб не спамило:
                             if (invoker.getScriptCounter() == invoker.SCRIPT_RECURSION_LIMIT)
@@ -41,7 +51,7 @@ public class ExecuteScriptCommand extends Command {
                             break;
                         }
                     }
-                    server.sendResponse(new Response(totalResponse.toString()));
+                    return new Response(totalResponse.toString());
                 } catch (IOException e) {
 //                throw new RuntimeException(e);
                     return new Response("Не удалось считать данные из файла (возможно, файл не найден)");
@@ -52,7 +62,6 @@ public class ExecuteScriptCommand extends Command {
         } else {
             return new Response(String.format("Неверное количество аргументов (got %s, expected 1)", args.length));
         }
-        return new Response("Скрипт выполнен");
     }
 
     @Override

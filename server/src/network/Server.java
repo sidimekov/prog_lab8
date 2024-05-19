@@ -10,6 +10,7 @@ import util.InputManager;
 
 import java.io.*;
 import java.net.*;
+import java.util.Scanner;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 
@@ -39,6 +40,21 @@ public class Server {
 
         RouteManager.initialize();
 
+//        Scanner credentials = null;
+//        String login, passwd;
+//        try {
+//            credentials = new Scanner(new FileReader("credentials"));
+//        } catch (FileNotFoundException e) {
+//            logger.severe("Не найден файл для подключения к БД");
+//            System.exit(0);
+//        }
+//
+//        login = credentials.nextLine().trim();
+//        passwd = credentials.nextLine().trim();
+//
+//        String jdbcURL = "jdbc:postgresql://pg:5432/studs";
+
+
         try {
             openServerSocket(serverPort);
         } catch (IOException e) {
@@ -51,24 +67,6 @@ public class Server {
         BufferedReader reader = InputManager.getConsoleReader();
 
         while (true) {
-
-            try {
-                if (reader.ready()) {
-                    String line = reader.readLine();
-                    switch (line) {
-                        case "save" -> {
-                            logger.info("Коллекция сохраняется автоматически");
-                        }
-                        case "exit" -> {
-                            logger.info("До связи");
-
-                            System.exit(0);
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
 
             // Executor Services
             ExecutorService requestGetter = ThreadManager.getRequestExecutor();
@@ -107,6 +105,7 @@ public class Server {
                 continue;
             } catch (ExecutionException e) {
                 logger.severe(String.format("В потоке обработки запросов возникла ошибка: %s\n", e.getMessage()));
+                e.printStackTrace();
                 continue;
             }
 
@@ -162,27 +161,36 @@ public class Server {
         if (request != null && request.getFilePath() != null) {
 
             // посылка запроса контента файла, если путь был указан
-
-            // создание запроса FileRequest, путь указывается который был послан серверу как аргумент
-            FileRequest fileRequest = new FileRequest();
-            fileRequest.setFilePath(request.getFilePath());
-
-            // формирование ответа с запросом FileRequest и его отправка
-            Response serverResponse = new Response(fileRequest);
-
-            // получение того, что в файле клиента
-            Response clientFileContent = sendResponse(serverResponse);
-
-            fileContent = clientFileContent.getMessage();
+            fileContent = getFileContent(request);
 
             request.setFileContent(fileContent);
+
         }
 
         return request;
     }
 
+    public String getFileContent(Request request) {
+        String fileContent;
+
+        // создание запроса FileRequest, путь указывается который был послан серверу как аргумент
+        FileRequest fileRequest = new FileRequest();
+        fileRequest.setFilePath(request.getFilePath());
+
+        // формирование ответа с запросом FileRequest и его отправка
+        Response serverResponse = new Response(fileRequest);
+
+        // получение того, что в файле клиента
+        Response clientFileContent = sendResponse(serverResponse);
+
+        fileContent = clientFileContent.getMessage();
+
+        return fileContent;
+    }
+
     /**
      * Формирует ответ на запрос, обрабатывая его
+     *
      * @param request - запрос, для которого нужно сформировать ответ
      * @return нужный ответ на запрос
      */
@@ -214,7 +222,6 @@ public class Server {
      * @return response - полученный ответ
      */
     public Response listenResponse() {
-//        System.out.println("Слушаю ответ");
         Response response = null;
 
         try {
@@ -255,7 +262,7 @@ public class Server {
      * @param request - Запрос для обработки
      * @return response - Ответ после запроса
      */
-    private Response handleRequest(CommandRequest request, String fileContent) {
+    public Response handleRequest(CommandRequest request, String fileContent) {
         Response response;
 
 //        System.out.println("fileContent: " + fileContent);
@@ -268,19 +275,19 @@ public class Server {
 
         if (request.getUser() == null && !cmdName.equals("register") && !cmdName.equals("login")) {
             response = new Response("Авторизируйтесь!");
-            logger.warning("Пользователь не авторизован...");
+            if (request.getReadMode() != ReadModes.FILE) logger.warning("Пользователь не авторизован...");
             return response;
         }
 
         if (command == null) {
             response = new Response("Указанной команды не существует!");
-            logger.warning("Такой команды не существует, отправка ответа клиенту...");
+            if (request.getReadMode() != ReadModes.FILE) logger.warning("Такой команды не существует, отправка ответа клиенту...");
             return response;
         }
 
         User user = request.getUser();
         if (user != null) {
-            logger.info(String.format("Пользователь: %s", user));
+            if (request.getReadMode() != ReadModes.FILE) logger.info(String.format("Пользователь: %s", user));
             command.setSender(user);
         }
 
@@ -315,15 +322,14 @@ public class Server {
         }
 
         response = cmdInvoker.runCommand(command, args, readMode);
-        logger.info(String.format("Команда %s выполнена, отправка ответа клиенту...\n", cmdName));
+        if (request.getReadMode() != ReadModes.FILE) logger.info(String.format("Команда %s выполнена, отправка ответа клиенту...\n", cmdName));
 
         return response;
     }
 
-    private Response handleRequest(CommandRequest request) {
+    public Response handleRequest(CommandRequest request) {
         return handleRequest(request, null);
     }
-
 
     /**
      * Отправка ответа на запрос клиенту

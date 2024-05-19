@@ -16,9 +16,10 @@ public class InfoCommand extends Command {
         RouteManager rm = RouteManager.getInstance();
         PriorityQueue<Route> collection = rm.getCollection();
         String response = "";
-        response = response + String.format("Тип коллекции: %s\n", collection.getClass().getName());
+        PriorityQueue<Route> userColl = RouteManager.getInstance().getDBCollection(sender.getId());
+        response = response + String.format("Тип коллекции: %s\n", userColl.getClass().getName());
         response = response + String.format("Дата создания: %s\n", rm.getInitializationDate());
-        response = response + String.format("Количество элементов: %s\n", collection.size());
+        response = response + String.format("Количество элементов: %s\n", userColl.size());
 
         return new Response(response);
     }

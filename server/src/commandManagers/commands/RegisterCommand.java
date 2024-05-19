@@ -18,6 +18,8 @@ public class RegisterCommand extends Command{
     @Override
     public Response execute(ReadModes readMode, String[] args) {
 
+        if (readMode.equals(ReadModes.FILE)) return new Response("Невозможно выполнить команду из файла");
+
         if (args.length == 3) {
             String login = args[0];
             String password = args[1];
@@ -51,11 +53,11 @@ public class RegisterCommand extends Command{
 
     @Override
     public String getUsage() {
-        return super.getUsage();
+        return USAGE;
     }
 
     @Override
     public String getDesc() {
-        return super.getDesc();
+        return DESC;
     }
 }

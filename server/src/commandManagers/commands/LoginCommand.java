@@ -17,6 +17,9 @@ public class LoginCommand extends Command {
 
     @Override
     public Response execute(ReadModes readMode, String[] args) {
+
+        if (readMode.equals(ReadModes.FILE)) return new Response("Невозможно выполнить команду из файла");
+
         Response response;
 
         if (args.length == 2) {
@@ -46,11 +49,11 @@ public class LoginCommand extends Command {
 
     @Override
     public String getUsage() {
-        return super.getUsage();
+        return USAGE;
     }
 
     @Override
     public String getDesc() {
-        return super.getDesc();
+        return DESC;
     }
 }

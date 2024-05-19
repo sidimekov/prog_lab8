@@ -81,8 +81,8 @@ public class Client {
             ois.close();
 
         } catch (IOException e) {
+            e.printStackTrace();
             System.out.printf("Ошибка ввода/вывода при получении ответа с сервера по адресу %s:%s : %s\n", serverAddr, serverPort, e.getMessage());
-//            e.printStackTrace();
         } catch (ClassNotFoundException | ClassCastException e) {
 //            e.printStackTrace();
             System.out.printf("Ошибка при формировании ответа с сервера по адресу %s:%s : %s\n", serverAddr, serverPort, e.getMessage());
@@ -138,7 +138,7 @@ public class Client {
 
         } catch (IOException e) {
             System.out.printf("Ошибка ввода/вывода при получении ответа с сервера по адресу %s:%s : %s\n", serverAddr, serverPort, e.getMessage());
-//            e.printStackTrace();
+            e.printStackTrace();
         } catch (ClassNotFoundException | ClassCastException e) {
 //            e.printStackTrace();
             System.out.printf("Ошибка при формировании ответа с сервера по адресу %s:%s : %s\n", serverAddr, serverPort, e.getMessage());

@@ -11,7 +11,7 @@ public class PrintDescendingCommand extends Command {
     @Override
     public Response execute(ReadModes readMode, String[] args) {
         RouteManager rm = RouteManager.getInstance();
-        String response = rm.returnDescending();
+        String response = rm.returnDescending(sender.getId());
         return new Response(response);
     }
 

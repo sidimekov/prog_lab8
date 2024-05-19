@@ -18,11 +18,16 @@ public class DatabaseManager {
 
     private Connection connect() {
         try {
-//            Class.forName("org.postgresql.Driver");
-            return DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "vgmkscir");
+            Class.forName("org.postgresql.Driver");
+            return DriverManager.getConnection("jdbc:postgresql://localhost:8005/studs", "s409553", "nWASInv7Uumwyf0P");
+//            return DriverManager.getConnection("jdbc:postgresql://pg:5432/studs", "s409553", "nWASInv7Uumwyf0P");
         } catch (SQLException e) {
             logger.severe("Ошибка подключения к базе данных");
             e.printStackTrace();
+            System.exit(0);
+        } catch (ClassNotFoundException e) {
+            logger.severe("Отсутствует драйвер PostgreSQL");
+            System.exit(0);
         }
         return null;
     }

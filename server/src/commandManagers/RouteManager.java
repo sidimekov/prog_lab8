@@ -336,8 +336,13 @@ public class RouteManager {
         }
     }
 
-    public String returnDescending() {
-        List<Route> list = RouteManager.convertToList(collection);
+    public String returnDescending(Long userId) {
+        List<Route> list;
+        if (userId == null) {
+            list = RouteManager.convertToList(collection);
+        } else {
+            list = RouteManager.convertToList(getDBCollection(userId));
+        }
         list.sort(new RouteComparator());
         Collections.reverse(list);
         if (collection.isEmpty()) {
@@ -349,6 +354,10 @@ public class RouteManager {
             }
             return response.toString();
         }
+    }
+
+    public String returnDescending() {
+        return returnDescending(null);
     }
 
     public void removeGreater(Route route, long userId) {

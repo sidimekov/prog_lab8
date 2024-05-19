@@ -5,7 +5,6 @@ import commandManagers.RouteManager;
 import entity.Route;
 import exceptions.FailedJSONReadException;
 import util.IdManager;
-import util.InputManager;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -26,12 +25,14 @@ public class JSONManager {
         return element;
     }
 
+    @Deprecated
     public static String elementToJson(Route element) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String json = gson.toJson(element);
         return json;
     }
 
+    @Deprecated
     public static String collectionToJson() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         PriorityQueue<Route> collection = RouteManager.getInstance().getCollection();
@@ -39,6 +40,7 @@ public class JSONManager {
         return json;
     }
 
+    @Deprecated
     public static PriorityQueue<Route> readCollection(String jsonContent) throws RuntimeException {
         Gson gson = new Gson();
 
@@ -74,6 +76,7 @@ public class JSONManager {
         }
     }
 
+    @Deprecated
     public static PriorityQueue<Route> readServerCollection(String path) {
 
         String jsonContent = null;

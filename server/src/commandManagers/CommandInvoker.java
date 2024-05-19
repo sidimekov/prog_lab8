@@ -2,8 +2,10 @@ package commandManagers;
 
 import commandManagers.commands.*;
 import enums.ReadModes;
+import network.CommandRequest;
 import network.Response;
 import network.Server;
+import network.User;
 import util.InputManager;
 
 import java.io.BufferedReader;
@@ -59,6 +61,7 @@ public class CommandInvoker {
         return scriptCounter;
     }
 
+    @Deprecated
     public Response runCommand(String line, ReadModes readMode) {
         String[] tokens = line.split(" ");
         Command cmd = getCommand(tokens[0]);
@@ -82,6 +85,30 @@ public class CommandInvoker {
             Server.getLogger().severe("Такой команды не существует!");
         }
         return response;
+    }
+
+    public CommandRequest createRequest(String line, ReadModes readMode, User user) {
+        CommandRequest request;
+
+        String[] tokens = line.split(" ");
+        String cmdName = tokens[0].toLowerCase();
+        String[] args = Arrays.copyOfRange(tokens, 1, tokens.length);
+
+        request = new CommandRequest(cmdName, args, readMode);
+        request.setUser(user);
+
+
+        if (args.length > 0) {
+            switch (cmdName) {
+                case "add", "add_if_min", "execute_script", "remove_greater", "update" -> {
+                    String path = args[0];
+                    request.setFilePath(path);
+                    request.setFileContent(Server.getInstance().getFileContent(request));
+                }
+            }
+        }
+
+        return request;
     }
 
     public Map<String, Command> getCommands() {

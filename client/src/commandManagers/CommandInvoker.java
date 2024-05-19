@@ -69,7 +69,7 @@ public class CommandInvoker {
 
             Response response;
 
-            for (int i = 0; i < MAX_RECONNECTION_ATTEMPTS; i++) {
+            for (int i = 0; i < 1; i++) {
 
                 response = client.sendRequest(request, serverSocketAddr.getAddress(), serverSocketAddr.getPort());
 
@@ -119,14 +119,14 @@ public class CommandInvoker {
                     break;
 
                 } catch (NullPointerException e) {
-                    reconnectionTimeout = (i + 1) * 5000;
-                    System.out.printf("Не удалось подключиться к серверу! Повторная попытка через %s секунд\n", reconnectionTimeout/1000);
+//                    reconnectionTimeout = (i + 1) * 5000;
+//                    System.out.printf("Не удалось подключиться к серверу! Повторная попытка через %s секунд\n", reconnectionTimeout / 1000);
                     System.out.println(e.getMessage());
-                    try {
-                        Thread.sleep(reconnectionTimeout);
-                    } catch (InterruptedException ex) {
-                        throw new RuntimeException(ex);
-                    }
+//                    try {
+//                        Thread.sleep(reconnectionTimeout);
+//                    } catch (InterruptedException ex) {
+//                        throw new RuntimeException(ex);
+//                    }
                 }
             }
         } else {
@@ -159,23 +159,34 @@ public class CommandInvoker {
                 client.sendResponse(buildResponse, serverSocketAddr.getAddress(), serverSocketAddr.getPort());
             }
             case FILE -> {
+                Response response;
+
                 FileRequest fileRequest = (FileRequest) request;
 
                 String path = fileRequest.getFilePath();
 
-                String fileContent = null;
+                if (InputManager.validPath(path) != null) {
 
-                try {
-                    fileContent = Files.readString(Path.of(path), StandardCharsets.UTF_8);
+                    if (path.startsWith("\"") && path.endsWith("\"")) {
+                        path = path.substring(1, path.length() - 1);
+                    }
+
+                    String fileContent = null;
+
+                    try {
+                        fileContent = Files.readString(Path.of(path), StandardCharsets.UTF_8);
 //                    System.out.println(fileContent);
-                } catch (IOException e) {
-                    System.out.printf("Ошибка при отправке содержимого файла: %s", e.getMessage());
+                    } catch (IOException e) {
+                        System.out.printf("Ошибка при отправке содержимого файла: %s", e.getMessage());
 //                    return;
+                    }
+
+                    response = new Response(fileContent);
+                } else {
+                    response = new Response("");
                 }
 
-                Response fileContentResponse = new Response(fileContent);
-
-                client.sendResponse(fileContentResponse, serverSocketAddr.getAddress(), serverSocketAddr.getPort());
+                client.sendResponse(response, serverSocketAddr.getAddress(), serverSocketAddr.getPort());
 //                client.sendResponse(new Response(path), serverSocketAddr.getAddress(), serverSocketAddr.getPort());
             }
         }
