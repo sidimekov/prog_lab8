@@ -67,11 +67,11 @@ public class CommandInvoker {
 
             InetSocketAddress serverSocketAddr = client.serverSocketAddr;
 
-            Response response;
-
-            for (int i = 0; i < 1; i++) {
+            for (int i = 0; i < MAX_RECONNECTION_ATTEMPTS; i++) {
+                Response response;
 
                 response = client.sendRequest(request, serverSocketAddr.getAddress(), serverSocketAddr.getPort());
+//                System.out.println(response);
 
                 try {
                     switch (cmdName) {
@@ -119,14 +119,15 @@ public class CommandInvoker {
                     break;
 
                 } catch (NullPointerException e) {
-//                    reconnectionTimeout = (i + 1) * 5000;
-//                    System.out.printf("Не удалось подключиться к серверу! Повторная попытка через %s секунд\n", reconnectionTimeout / 1000);
+                    reconnectionTimeout = (i + 1) * 5000;
+                    System.out.printf("Не удалось подключиться к серверу! Повторная попытка через %s секунд\n", reconnectionTimeout / 1000);
                     System.out.println(e.getMessage());
-//                    try {
-//                        Thread.sleep(reconnectionTimeout);
-//                    } catch (InterruptedException ex) {
-//                        throw new RuntimeException(ex);
-//                    }
+                    try {
+                        Thread.sleep(reconnectionTimeout);
+                    } catch (InterruptedException ex) {
+                        throw new RuntimeException(ex);
+                    }
+//                    e.printStackTrace();
                 }
             }
         } else {

@@ -23,10 +23,10 @@ public class UpdateCommand extends Command {
     @Override
     public Response execute(ReadModes readMode, String[] args) {
         RouteManager rm = RouteManager.getInstance();
+        long updated;
         if (args.length == 0) {
             // если нет аргументов, то нужно построить из консоли, значит если файл то бан
 
-            long updated;
             if (readMode == ReadModes.CONSOLE) {
                 try {
                     BufferedReader reader = InputManager.getConsoleReader();
@@ -40,6 +40,8 @@ public class UpdateCommand extends Command {
 
                 if (updated == -1) {
                     return new Response("Во время обновления произошла ошибка. Возможно не найден указанный id элемента");
+                } else {
+                    return new Response("Элемент обновлен");
                 }
 
             } else {
@@ -51,7 +53,7 @@ public class UpdateCommand extends Command {
                 try {
                     Route element = JSONManager.readElement(jsonContent);
                     jsonContent = null;
-                    rm.update(element, sender.getId());
+                    updated = rm.update(element, sender.getId());
                 } catch (FailedValidationException | FailedJSONReadException e) {
                     return new Response(e.getMessage());
                 } catch (NoAccessToObjectException e) {
@@ -60,8 +62,13 @@ public class UpdateCommand extends Command {
             } else {
                 return new Response("Файл не найден / был пуст");
             }
+
+            if (updated == -1) {
+                return new Response("Во время обновления произошла ошибка. Возможно не найден указанный id элемента");
+            } else {
+                return new Response("Элемент обновлен");
+            }
         }
-        return new Response("Обновлён элемент в коллекции");
     }
 
     public String getJsonContent() {

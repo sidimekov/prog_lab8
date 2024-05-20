@@ -10,7 +10,6 @@ import util.InputManager;
 
 import java.io.*;
 import java.net.*;
-import java.util.Scanner;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 
@@ -343,6 +342,7 @@ public class Server {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(baos);
 
+//            System.out.println(response);
             oos.writeObject(response);
 
             oos.flush();
