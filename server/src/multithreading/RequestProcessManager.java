@@ -30,6 +30,10 @@ public class RequestProcessManager {
         if (responseFuture.isDone()) {
             response = responseFuture.get();
 
+            if (response.hasResponseRequest()) {
+                // Получение нужного респонса
+            }
+
             Runnable sendResponse = () -> Server.getInstance().sendResponse(response);
 
             ThreadManager.getSendResponseExecutor().execute(sendResponse);

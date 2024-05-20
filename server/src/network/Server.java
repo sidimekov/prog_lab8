@@ -133,57 +133,54 @@ public class Server {
                 }
             }
 
-//            processManagers = List.copyOf(newProcessManagers);
 
-            // Обработка запроса и формирование ответа
-//            if (request != null) {
+
+            /////////////////////////////////////////////// однопоточка ////////////////////////////
+//            // Executor Services
+//            ExecutorService requestGetter = ThreadManager.getRequestExecutor();
+//            ForkJoinPool requestExecutor = ThreadManager.getExecuteRequestExecutor();
+//            ExecutorService responseSender = ThreadManager.getSendResponseExecutor();
 //
-//                Request handlingRequest = request;
-//                request = null;
+//            // Получение запроса
+//            Request request;
 //
-//                Callable<Response> callResponse = () -> makeResponse(handlingRequest);
+//            Callable<Request> callRequest = this::listenRequest;
+//
+//            requestFuture = requestGetter.submit(callRequest);
+//
+//            try {
+//                request = requestFuture.get();
+//            } catch (InterruptedException e) {
+//                logger.severe("Поток чтения запросов прерван");
+//                continue;
+//            } catch (ExecutionException e) {
+//                logger.severe(String.format("В потоке чтения запросов возникла ошибка: %s\n", e.getMessage()));
+//                continue;
+//            }
+//
+//            // Обработка запроса и формирование ответа
+//            Response response;
+//
+//            Callable<Response> callResponse = () -> makeResponse(request);
 //
 ////            Future<Response> responseFuture = requestExecutor.invoke(callResponse);
-//                if (responseFuture == null) {
-//                    responseFuture = requestExecutor.submit(callResponse);
-//                }
+//            Future<Response> responseFuture = requestExecutor.submit(callResponse);
 //
-//                if (responseFuture != null) {
-//                    System.out.println(responseFuture.isDone());
-//                }
-//
-//                if (responseFuture.isDone()) {
-//
-//                    try {
-//                        response = responseFuture.get();
-//                    } catch (InterruptedException e) {
-//                        logger.severe("Поток обработки запросов прерван");
-//                        response = null;
-//                        continue;
-//                    } catch (ExecutionException e) {
-//                        logger.severe(String.format("В потоке обработки запросов возникла ошибка: %s\n", e.getMessage()));
-//                        response = null;
-////                        e.printStackTrace();
-//                        continue;
-//                    }
-//                    responseFuture = null;
-//
-//                }
+//            try {
+//                response = responseFuture.get();
+//            } catch (InterruptedException e) {
+//                logger.severe("Поток обработки запросов прерван");
+//                continue;
+//            } catch (ExecutionException e) {
+//                logger.severe(String.format("В потоке обработки запросов возникла ошибка: %s\n", e.getMessage()));
+//                e.printStackTrace();
+//                continue;
 //            }
 //
-//            if (response != null) {
-//                // Посылка запроса
-//                System.out.println("executing");
+//            // Посылка запроса
+//            Runnable sendResponse = () -> sendResponse(response);
 //
-//                Response handlingResponse = response;
-//                response = null;
-//
-//                Runnable sendResponse = () -> sendResponse(handlingResponse);
-//
-//                responseSender.execute(sendResponse);
-//                System.out.println("executed");
-//
-//            }
+//            responseSender.execute(sendResponse);
         }
     }
 
@@ -215,6 +212,11 @@ public class Server {
             try {
                 request = (Request) maybeRequest;
             } catch (ClassCastException e) {
+                // тогда это респонс и нужно дать потоку с listenResponse дойти досюда и прочитать
+                Response response = (Response) maybeRequest;
+
+                // передача респонса в нужный RequestProcessManager
+
                 return null;
             }
 
