@@ -3,6 +3,7 @@ package commandManagers.commands;
 import database.DatabaseManager;
 import enums.ReadModes;
 import network.Response;
+import network.Server;
 import network.User;
 
 import java.io.Serial;
@@ -36,6 +37,9 @@ public class LoginCommand extends Command {
 //                System.out.println(userId);
                 user.setId(userId);
                 response = new Response("Авторизация успешна");
+
+                Server.getLogger().info("Авторизован пользователь " + user.getLogin());
+
                 response.setUser(user);
                 return response;
             } else {

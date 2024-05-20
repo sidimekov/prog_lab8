@@ -1,15 +1,20 @@
 package network;
 
+import com.google.gson.internal.bind.util.ISO8601Utils;
 import commandManagers.CommandInvoker;
 import commandManagers.RouteManager;
 import commandManagers.commands.*;
 import enums.ReadModes;
 import enums.RequestTypes;
+import multithreading.RequestProcessManager;
 import multithreading.ThreadManager;
 import util.InputManager;
 
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 
@@ -63,56 +68,122 @@ public class Server {
 
         logger.info(String.format("Сервер запущен на порту: %s\n", serverPort));
 
-        BufferedReader reader = InputManager.getConsoleReader();
+//        BufferedReader reader = InputManager.getConsoleReader();
+
+        Request request = null;
+
+        Future<Request> requestFuture = null;
+
+        List<RequestProcessManager> processManagers = new ArrayList<>();
+
+//        Callable<Request> callRequest = this::listenRequest;
 
         while (true) {
 
             // Executor Services
             ExecutorService requestGetter = ThreadManager.getRequestExecutor();
-            ForkJoinPool requestExecutor = ThreadManager.getExecuteRequestExecutor();
-            ExecutorService responseSender = ThreadManager.getSendResponseExecutor();
 
             // Получение запроса
-            Request request;
 
-            Callable<Request> callRequest = this::listenRequest;
+            if (requestFuture == null) {
+                Callable<Request> callRequest = this::listenRequest;
+                requestFuture = requestGetter.submit(callRequest);
+            }
 
-            Future<Request> requestFuture = requestGetter.submit(callRequest);
+            if (requestFuture.isDone()) {
+                System.out.println("done req");
 
-            try {
-                request = requestFuture.get();
-            } catch (InterruptedException e) {
-                logger.severe("Поток чтения запросов прерван");
-                continue;
-            } catch (ExecutionException e) {
-                logger.severe(String.format("В потоке чтения запросов возникла ошибка: %s\n", e.getMessage()));
-                continue;
+                try {
+                    request = requestFuture.get();
+                    if (request != null) {
+                        RequestProcessManager processManager = new RequestProcessManager(request);
+                        processManagers.add(processManager);
+//                    requestFuture = null;
+                    }
+                } catch (InterruptedException e) {
+                    logger.severe("Поток чтения запросов прерван");
+                    requestFuture = null;
+                    continue;
+                } catch (ExecutionException e) {
+                    logger.severe(String.format("В потоке чтения запросов возникла ошибка: %s\n", e.getMessage()));
+                    requestFuture = null;
+                    continue;
+                }
+                requestFuture = null;
             }
 
             // Обработка запроса и формирование ответа
-            Response response;
 
-            Callable<Response> callResponse = () -> makeResponse(request);
+//            List<RequestProcessManager> newProcessManagers = List.copyOf(processManagers);
 
-//            Future<Response> responseFuture = requestExecutor.invoke(callResponse);
-            Future<Response> responseFuture = requestExecutor.submit(callResponse);
-
-            try {
-                response = responseFuture.get();
-            } catch (InterruptedException e) {
-                logger.severe("Поток обработки запросов прерван");
-                continue;
-            } catch (ExecutionException e) {
-                logger.severe(String.format("В потоке обработки запросов возникла ошибка: %s\n", e.getMessage()));
-                e.printStackTrace();
-                continue;
+            for (RequestProcessManager processManager : processManagers) {
+                if (processManager.isProcessed()) continue;
+                boolean processed = false;
+                try {
+                    processed = processManager.tryProcess();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if (processed) {
+                    System.out.println("done");
+//                    newProcessManagers.remove(processManager);
+//                    requestFuture = null;
+                }
             }
 
-            // Посылка запроса
-            Runnable sendResponse = () -> sendResponse(response);
+//            processManagers = List.copyOf(newProcessManagers);
 
-            responseSender.execute(sendResponse);
-
+            // Обработка запроса и формирование ответа
+//            if (request != null) {
+//
+//                Request handlingRequest = request;
+//                request = null;
+//
+//                Callable<Response> callResponse = () -> makeResponse(handlingRequest);
+//
+////            Future<Response> responseFuture = requestExecutor.invoke(callResponse);
+//                if (responseFuture == null) {
+//                    responseFuture = requestExecutor.submit(callResponse);
+//                }
+//
+//                if (responseFuture != null) {
+//                    System.out.println(responseFuture.isDone());
+//                }
+//
+//                if (responseFuture.isDone()) {
+//
+//                    try {
+//                        response = responseFuture.get();
+//                    } catch (InterruptedException e) {
+//                        logger.severe("Поток обработки запросов прерван");
+//                        response = null;
+//                        continue;
+//                    } catch (ExecutionException e) {
+//                        logger.severe(String.format("В потоке обработки запросов возникла ошибка: %s\n", e.getMessage()));
+//                        response = null;
+////                        e.printStackTrace();
+//                        continue;
+//                    }
+//                    responseFuture = null;
+//
+//                }
+//            }
+//
+//            if (response != null) {
+//                // Посылка запроса
+//                System.out.println("executing");
+//
+//                Response handlingResponse = response;
+//                response = null;
+//
+//                Runnable sendResponse = () -> sendResponse(handlingResponse);
+//
+//                responseSender.execute(sendResponse);
+//                System.out.println("executed");
+//
+//            }
         }
     }
 
@@ -140,7 +211,12 @@ public class Server {
             ByteArrayInputStream bais = new ByteArrayInputStream(dataRequest);
             ObjectInputStream ois = new ObjectInputStream(bais);
 
-            request = (Request) ois.readObject();
+            Object maybeRequest = ois.readObject();
+            try {
+                request = (Request) maybeRequest;
+            } catch (ClassCastException e) {
+                return null;
+            }
 
             bais.close();
             ois.close();
@@ -150,9 +226,9 @@ public class Server {
 
         } catch (IOException e) {
             logger.severe(String.format("Ошибка ввода/вывода при получении запросов: %s\n", e.getMessage()));
-        } catch (ClassNotFoundException | ClassCastException e) {
+        } catch (ClassNotFoundException e) {
             logger.severe(String.format("Ошибка при формировании запроса от клиента по адресу %s:%s\n", clientAddr, clientPort));
-//            e.printStackTrace();
+            e.printStackTrace();
         }
 
         String fileContent = null;
@@ -193,7 +269,7 @@ public class Server {
      * @param request - запрос, для которого нужно сформировать ответ
      * @return нужный ответ на запрос
      */
-    private Response makeResponse(Request request) {
+    public Response makeResponse(Request request) {
 
         String fileContent = request.getFileContent();
         Response response = null;
@@ -249,7 +325,7 @@ public class Server {
             logger.severe(String.format("Ошибка ввода/вывода при получении запросов: %s\n", e.getMessage()));
 //            e.printStackTrace();
         } catch (ClassNotFoundException | ClassCastException e) {
-            logger.severe(String.format("Ошибка при формировании запроса от клиента по адресу %s:%s. Ошибка: %s\n", clientAddr, clientPort, e.getMessage()));
+            logger.severe(String.format("Ошибка при формировании ответа клиенту по адресу %s:%s. Ошибка: %s\n", clientAddr, clientPort, e.getMessage()));
         }
 
         return response;
