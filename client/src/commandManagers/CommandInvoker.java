@@ -41,7 +41,7 @@ public class CommandInvoker {
         }
     }
 
-    public void runCommand(String line, ReadModes readMode) {
+    public Response runCommand(String line, ReadModes readMode) {
         String[] tokens = line.split(" ");
         String cmdName = tokens[0].toLowerCase();
         String[] args = Arrays.copyOfRange(tokens, 1, tokens.length);
@@ -84,8 +84,7 @@ public class CommandInvoker {
                         }
                         case "logout" -> {
                             client.setUser(null);
-                            System.out.println("Вы вышли из аккаунта. Авторизирутейсь (login <логин> <пароль>) или зарегистрируйтесь (register <логин> <пароль> <подтверждение пароля>)");
-                            return;
+                            return new Response("Вы вышли из аккаунта. Авторизирутейсь (login <логин> <пароль>) или зарегистрируйтесь (register <логин> <пароль> <подтверждение пароля>)");
                         }
                     }
 
@@ -94,7 +93,7 @@ public class CommandInvoker {
 //                System.out.println(response);
 
                         if (response.getMessage() != null) {
-                            System.out.println(response.getMessage());
+                            return response;
                         }
                         // Если сервер при посылке ответа, послал запрос (например передать элемент)
 
@@ -108,15 +107,15 @@ public class CommandInvoker {
                                 FileRequest fileRequest = (FileRequest) req;
                                 handleRequest(fileRequest);
                             }
-                            case MESSAGE -> System.out.println(((MessageRequest) req).getMessage());
+                            case MESSAGE -> {
+                                return new Response(((MessageRequest) req).getMessage());
+                            }
                         }
 
                         response = client.listenResponse(serverSocketAddr.getAddress(), serverSocketAddr.getPort());
                     }
 
-                    System.out.println(response.getMessage());
-
-                    break;
+                    return response;
 
                 } catch (NullPointerException e) {
                     reconnectionTimeout = (i + 1) * 5000;
@@ -130,8 +129,9 @@ public class CommandInvoker {
 //                    e.printStackTrace();
                 }
             }
+            return null;
         } else {
-            System.out.println("Пустая команда!");
+            return new Response("Пустая команда!");
         }
     }
 

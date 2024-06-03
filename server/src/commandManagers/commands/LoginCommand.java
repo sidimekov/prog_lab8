@@ -2,6 +2,7 @@ package commandManagers.commands;
 
 import database.DatabaseManager;
 import enums.ReadModes;
+import enums.ResponseStatus;
 import network.Response;
 import network.Server;
 import network.User;
@@ -19,7 +20,7 @@ public class LoginCommand extends Command {
     @Override
     public Response execute(ReadModes readMode, String[] args) {
 
-        if (readMode.equals(ReadModes.FILE)) return new Response("Невозможно выполнить команду из файла");
+        if (readMode.equals(ReadModes.FILE)) return new Response("Невозможно выполнить команду из файла", ResponseStatus.CLIENT_ERROR);
 
         Response response;
 
@@ -36,18 +37,18 @@ public class LoginCommand extends Command {
                 long userId = dbManager.checkUser(user);
 //                System.out.println(userId);
                 user.setId(userId);
-                response = new Response("Авторизация успешна");
+                response = new Response("Авторизация успешна", ResponseStatus.OK);
 
                 Server.getLogger().info("Авторизован пользователь " + user.getLogin());
 
                 response.setUser(user);
                 return response;
             } else {
-                return new Response("Неверный логин или пароль");
+                return new Response("Неверный логин или пароль", ResponseStatus.CLIENT_ERROR);
             }
 
         } else {
-            return new Response(String.format("Некорректные аргументы, использование: %s\n", USAGE));
+            return new Response(String.format("Некорректные аргументы, использование: %s\n", USAGE), ResponseStatus.CLIENT_ERROR);
         }
     }
 

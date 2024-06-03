@@ -2,6 +2,7 @@ package commandManagers.commands;
 
 import database.DatabaseManager;
 import enums.ReadModes;
+import enums.ResponseStatus;
 import network.Response;
 import network.Server;
 import network.User;
@@ -19,7 +20,7 @@ public class RegisterCommand extends Command{
     @Override
     public Response execute(ReadModes readMode, String[] args) {
 
-        if (readMode.equals(ReadModes.FILE)) return new Response("Невозможно выполнить команду из файла");
+        if (readMode.equals(ReadModes.FILE)) return new Response("Невозможно выполнить команду из файла", ResponseStatus.CLIENT_ERROR);
 
         if (args.length == 3) {
             String login = args[0];
@@ -37,21 +38,21 @@ public class RegisterCommand extends Command{
                     long userId = dbManager.addUser(user);
                     user.setId(userId);
 
-                    Response response = new Response("Регистрация успешна");
+                    Response response = new Response("Регистрация успешна", ResponseStatus.OK);
 
                     Server.getLogger().info("Зарегистрирован и авторизован пользователь " + user.getLogin());
 
                     response.setUser(user);
                     return response;
                 } else {
-                    return new Response("Указанный логин уже зарегистрирован");
+                    return new Response("Указанный логин уже зарегистрирован", ResponseStatus.CLIENT_ERROR);
                 }
             } else {
-                return new Response("Пароли не совпадают!");
+                return new Response("Пароли не совпадают!", ResponseStatus.CLIENT_ERROR);
             }
 
         } else {
-            return new Response(String.format("Некорректные аргументы, использование: %s\n", USAGE));
+            return new Response(String.format("Некорректные аргументы, использование: %s\n", USAGE), ResponseStatus.CLIENT_ERROR);
         }
     }
 

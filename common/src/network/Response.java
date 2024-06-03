@@ -1,6 +1,7 @@
 package network;
 
 import enums.RequestTypes;
+import enums.ResponseStatus;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -10,6 +11,7 @@ public class Response implements Serializable {
     private static final long serialVersionUID = -1202337532505101798L;
     private String message;
     private Request responseRequest;
+    private ResponseStatus responseStatus;
     private User user;
     // вместо isFinal проверка на null реквеста
 
@@ -18,6 +20,10 @@ public class Response implements Serializable {
         if (responseRequest.getType() == RequestTypes.BUILD) {
             this.message = ((BuildRequest) responseRequest).getMessage();
         }
+    }
+    public Response(String message, ResponseStatus responseStatus) {
+        this.message = message;
+        this.responseStatus = responseStatus;
     }
     public Response(String message) {
         this.message = message;
@@ -55,5 +61,13 @@ public class Response implements Serializable {
 
     public User getUser() {
         return user;
+    }
+
+    public ResponseStatus getStatus() {
+        return responseStatus;
+    }
+
+    public void setStatus(ResponseStatus responseStatus) {
+        this.responseStatus = responseStatus;
     }
 }
