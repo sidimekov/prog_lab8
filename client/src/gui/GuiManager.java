@@ -45,6 +45,7 @@ public class GuiManager {
 
     public void openSignInPanel() {
         frame.setContentPane(signInForm.getSignInPanel());
+        frame.pack();
         frame.setVisible(true);
     }
     public void openSignInPanel(String message) {
@@ -58,12 +59,16 @@ public class GuiManager {
         JPanel signUpPanel = signUpForm.getSignUpPanel();
 //        frame.add()
         frame.setContentPane(signUpPanel);
+        frame.pack();
         frame.setVisible(true);
     }
 
     public void openMainPanel() {
         frame.setContentPane(mainForm.getMainPanel());
-        frame.setSize(1024, 512);
+//        frame.setPreferredSize(new Dimension(1440, 720));
+//        frame.pack();
+        this.frame.setLocationRelativeTo(null);
+//        frame.pack();
         frame.setVisible(true);
     }
 
