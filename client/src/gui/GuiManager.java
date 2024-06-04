@@ -5,6 +5,11 @@ import gui.forms.SignInForm;
 import gui.forms.SignUpForm;
 
 import javax.swing.*;
+import java.awt.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public class GuiManager {
     private static GuiManager instance;
@@ -12,6 +17,8 @@ public class GuiManager {
     private SignInForm signInForm;
     private SignUpForm signUpForm;
     private MainForm mainForm;
+    private ResourceBundle resourceBundle;
+    private Locale locale;
 
     private GuiManager(JFrame frame) {
         this.frame = frame;
@@ -25,6 +32,7 @@ public class GuiManager {
         if (instance == null) {
             instance = new GuiManager(new JFrame());
         }
+        instance.updateLocale(null);
         return instance;
     }
 
@@ -47,7 +55,9 @@ public class GuiManager {
     }
 
     public void openSingUpPanel() {
-        frame.setContentPane(signUpForm.getAuthSignUpPanel());
+        JPanel signUpPanel = signUpForm.getSignUpPanel();
+//        frame.add()
+        frame.setContentPane(signUpPanel);
         frame.setVisible(true);
     }
 
@@ -56,4 +66,43 @@ public class GuiManager {
         frame.setSize(1024, 512);
         frame.setVisible(true);
     }
+
+    public Font getDefaultFont(int size) {
+        return new Font("Century Gothic",Font.PLAIN, size);
+    }
+    public Font getDefaultFont() {
+        return getDefaultFont(16);
+    }
+
+    public Locale getLocale() {
+        return locale;
+    }
+
+    public void updateLocale(Locale locale) {
+
+        ResourceBundle.clearCache();
+        if (locale != null) {
+            resourceBundle = ResourceBundle.getBundle("resources.gui", locale);
+        } else {
+            // получить английский дефолтный из gui.properties
+            resourceBundle = ResourceBundle.getBundle("resources.gui",
+                    new ResourceBundle.Control() {
+                        @Override
+                        public List<Locale> getCandidateLocales(String name,
+                                                                Locale locale) {
+                            return Collections.singletonList(Locale.ROOT);
+                        }
+                    });
+            return;
+        }
+
+        Locale.setDefault(locale);
+        this.locale = locale;
+
+    }
+
+    public ResourceBundle getResourceBundle() {
+        return resourceBundle;
+    }
+
 }

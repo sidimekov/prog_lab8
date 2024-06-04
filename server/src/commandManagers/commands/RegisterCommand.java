@@ -52,7 +52,7 @@ public class RegisterCommand extends Command{
             }
 
         } else {
-            return new Response(String.format("Некорректные аргументы, использование: %s\n", USAGE), ResponseStatus.CLIENT_ERROR);
+            return new Response("Некорректный ввод!");
         }
     }
 
