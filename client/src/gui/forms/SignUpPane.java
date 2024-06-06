@@ -10,7 +10,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class SignUpForm extends JPanel {
+public class SignUpPane extends JPanel {
     GuiManager guiManager = GuiManager.getInstance();
     private JPanel signUpPanel;
     private JPanel rightPanel;
@@ -25,7 +25,7 @@ public class SignUpForm extends JPanel {
     private JButton signUpButton;
     private JLabel messageLabel;
 
-    public SignUpForm() {
+    public SignUpPane() {
 
         signUpPanel = new JPanel(new GridLayout(1,2,0,0));
         signUpPanel.setBounds(0, 0, 1024, 512);

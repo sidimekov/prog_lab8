@@ -13,6 +13,8 @@ public class Response implements Serializable {
     private Request responseRequest;
     private ResponseStatus responseStatus;
     private User user;
+
+    private Object object;
     // вместо isFinal проверка на null реквеста
 
     public Response(Request responseRequest) {
@@ -29,6 +31,11 @@ public class Response implements Serializable {
         this.message = message;
     }
     public Response() {
+    }
+
+    public Response (Object object, ResponseStatus status) {
+        this.object = object;
+        this.responseStatus = status;
     }
 
     public String getMessage() {
@@ -69,5 +76,14 @@ public class Response implements Serializable {
 
     public void setStatus(ResponseStatus responseStatus) {
         this.responseStatus = responseStatus;
+    }
+
+    public Object getObject() {
+        return object;
+    }
+
+
+    public void setObject(Object object) {
+        this.object = object;
     }
 }

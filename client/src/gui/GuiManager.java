@@ -1,8 +1,9 @@
 package gui;
 
-import gui.forms.MainForm;
-import gui.forms.SignInForm;
-import gui.forms.SignUpForm;
+import gui.forms.MainPane;
+import gui.forms.SignInPane;
+import gui.forms.SignUpPane;
+import network.Client;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,11 +15,13 @@ import java.util.ResourceBundle;
 public class GuiManager {
     private static GuiManager instance;
     private final JFrame frame;
-    private SignInForm signInForm;
-    private SignUpForm signUpForm;
-    private MainForm mainForm;
+    private SignInPane signInForm;
+    private SignUpPane signUpForm;
+    private MainPane mainPanel;
     private ResourceBundle resourceBundle;
     private Locale locale;
+
+    private Client client = Client.getInstance();
 
     private GuiManager(JFrame frame) {
         this.frame = frame;
@@ -37,9 +40,9 @@ public class GuiManager {
     }
 
     public void run() {
-        signInForm = new SignInForm();
-        signUpForm = new SignUpForm();
-        mainForm = new MainForm();
+        signInForm = new SignInPane();
+        signUpForm = new SignUpPane();
+        mainPanel = new MainPane();
         openSignInPanel();
     }
 
@@ -64,9 +67,12 @@ public class GuiManager {
     }
 
     public void openMainPanel() {
-        frame.setContentPane(mainForm.getMainPanel());
-//        frame.setPreferredSize(new Dimension(1440, 720));
-//        frame.pack();
+        frame.setContentPane(mainPanel.getMainPanel());
+
+        mainPanel.updateTableData();
+
+        frame.setPreferredSize(new Dimension(1440, 720));
+        frame.pack();
         this.frame.setLocationRelativeTo(null);
 //        frame.pack();
         frame.setVisible(true);
@@ -109,5 +115,6 @@ public class GuiManager {
     public ResourceBundle getResourceBundle() {
         return resourceBundle;
     }
+
 
 }

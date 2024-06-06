@@ -404,4 +404,30 @@ public class RouteManager {
             return (id > 0);
         }
     }
+
+
+    public Object[][] getTableData(){
+        return getCollection().stream()
+                .map(this::createRow)
+                .toArray(Object[][]::new);
+    }
+
+    private Object[] createRow(Route route){
+        return new Object[]{
+                route.getId(),
+                route.getName(),
+                route.getCreationDate(),
+                route.getCoordinates().getX(),
+                route.getCoordinates().getY(),
+                route.getFrom().getX(),
+                route.getFrom().getY(),
+                route.getFrom().getZ(),
+                route.getTo().getName(),
+                route.getTo().getX(),
+                route.getTo().getY(),
+                route.getTo().getZ(),
+                route.getDistance()
+        };
+    }
+
 }
