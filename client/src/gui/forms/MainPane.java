@@ -25,12 +25,24 @@ public class MainPane {
     private JButton removeButton;
     private JButton otherButton;
     private JScrollPane tablePanel;
+    private JButton logoutButton;
 
     public MainPane() {
         addButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 guiManager.openAddDialog();
+            }
+        });
+        logoutButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Response response = CommandInvoker.getInstance().runCommand("logout", ReadModes.APP);
+                switch (response.getStatus()) {
+                    case OK -> {
+                        guiManager.openSignInPanel();
+                    }
+                }
             }
         });
     }

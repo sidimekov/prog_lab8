@@ -49,11 +49,15 @@ public class GuiManager {
     public void openSignInPanel() {
         frame.setContentPane(signInForm.getSignInPanel());
         frame.pack();
+        frame.setSize(1024, 512);
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
     public void openSignInPanel(String message) {
         signInForm.clearMessageLabel();
         signInForm.setMessageLabel(message);
+        frame.setSize(1024, 512);
+        frame.setLocationRelativeTo(null);
         openSignInPanel();
 //        signInForm.setAuthMessageLabel(null);
     }

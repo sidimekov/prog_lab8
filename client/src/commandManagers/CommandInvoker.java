@@ -1,6 +1,7 @@
 package commandManagers;
 
 import enums.ReadModes;
+import enums.ResponseStatus;
 import network.*;
 import util.InputManager;
 
@@ -90,7 +91,7 @@ public class CommandInvoker {
                         }
                         case "logout" -> {
                             client.setUser(null);
-                            return new Response("Вы вышли из аккаунта. Авторизирутейсь (login <логин> <пароль>) или зарегистрируйтесь (register <логин> <пароль> <подтверждение пароля>)");
+                            return new Response("Вы вышли из аккаунта. Авторизирутейсь (login <логин> <пароль>) или зарегистрируйтесь (register <логин> <пароль> <подтверждение пароля>)", ResponseStatus.OK);
                         }
                     }
 
