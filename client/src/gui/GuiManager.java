@@ -1,5 +1,6 @@
 package gui;
 
+import gui.forms.AddDialog;
 import gui.forms.MainPane;
 import gui.forms.SignInPane;
 import gui.forms.SignUpPane;
@@ -20,7 +21,6 @@ public class GuiManager {
     private MainPane mainPanel;
     private ResourceBundle resourceBundle;
     private Locale locale;
-
     private Client client = Client.getInstance();
 
     private GuiManager(JFrame frame) {
@@ -70,12 +70,23 @@ public class GuiManager {
         frame.setContentPane(mainPanel.getMainPanel());
 
         mainPanel.updateTableData();
+        mainPanel.updateUserLabel(client.getUser().getLogin());
 
         frame.setPreferredSize(new Dimension(1440, 720));
         frame.pack();
-        this.frame.setLocationRelativeTo(null);
+        frame.setLocationRelativeTo(null);
 //        frame.pack();
         frame.setVisible(true);
+    }
+
+    public void openAddDialog() {
+        AddDialog addDialog = new AddDialog();
+
+        addDialog.setPreferredSize(new Dimension(800, 500));
+        addDialog.pack();
+        addDialog.setLocationRelativeTo(null);
+
+        addDialog.setVisible(true);
     }
 
     public Font getDefaultFont(int size) {

@@ -9,6 +9,8 @@ import javax.swing.*;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class MainPane {
     private GuiManager guiManager = GuiManager.getInstance();
@@ -23,6 +25,15 @@ public class MainPane {
     private JButton removeButton;
     private JButton otherButton;
     private JScrollPane tablePanel;
+
+    public MainPane() {
+        addButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                guiManager.openAddDialog();
+            }
+        });
+    }
 
     public JPanel getMainPanel() {
         return mainPanel;
@@ -55,5 +66,9 @@ public class MainPane {
                 mainHeader.setText(guiManager.getResourceBundle().getString("serverError"));
             }
         }
+    }
+
+    public void updateUserLabel(String login) {
+        username.setText(login);
     }
 }
