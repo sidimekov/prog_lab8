@@ -13,6 +13,7 @@ public class CommandRequest extends Request {
     private String cmdName;
     private String[] args;
     private ReadModes readMode;
+    private Object object;
 
     public CommandRequest(String cmdName, String[] args) {
         super(RequestTypes.COMMAND);
@@ -40,13 +41,21 @@ public class CommandRequest extends Request {
         this.readMode = readMode;
     }
 
+    public Object getObject() {
+        return object;
+    }
+
+    public void setObject(Object object) {
+        this.object = object;
+    }
+
     @Override
     public String toString() {
         return "CommandRequest{" +
                 "cmdName='" + cmdName + '\'' +
                 ", args=" + Arrays.toString(args) +
                 ", readMode=" + readMode +
-                ", filePath=" + super.getFilePath() +
+                ", object=" + object +
                 '}';
     }
 }

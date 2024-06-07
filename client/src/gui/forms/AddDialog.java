@@ -1,9 +1,20 @@
 package gui.forms;
 
+import commandManagers.CommandInvoker;
+import entity.Coordinates;
+import entity.LocationFrom;
+import entity.LocationTo;
+import entity.Route;
+import enums.ReadModes;
+import enums.ResponseStatus;
+import gui.GuiManager;
+import network.Response;
+
 import javax.swing.*;
 import java.awt.event.*;
 
 public class AddDialog extends JDialog {
+    private GuiManager guiManager = GuiManager.getInstance();
     private JPanel addObjectPane;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -36,6 +47,7 @@ public class AddDialog extends JDialog {
     private JLabel toZLabel;
     private JTextField toNameField;
     private JLabel toNameLabel;
+    private JLabel messageLabel;
 
     public AddDialog() {
         setContentPane(addObjectPane);
@@ -72,9 +84,56 @@ public class AddDialog extends JDialog {
 
     private void onOK() {
 
-        // на серв если круто то диспос, если нет то красные иконки
+        String routeName = routeNameField.getText();
+        String toName = toNameField.getText();
+        double distance;
+        double coordinatesX;
+        Integer coordinatesY;
+        int fromX;
+        Integer fromY;
+        float fromZ;
+        float toX;
+        Integer toY;
+        long toZ;
+        try {
+            distance = Double.parseDouble(routeDistanceField.getText());
+            coordinatesX = Double.parseDouble(coordinatesXField.getText());
+            coordinatesY = Integer.parseInt(coordinatesYField.getText());
+            fromX = Integer.parseInt(fromXField.getText());
+            fromY = Integer.parseInt(fromYField.getText());
+            fromZ = Float.parseFloat(fromZField.getText());
+            toX = Float.parseFloat(toXField.getText());
+            toY = Integer.parseInt(toYField.getText());
+            toZ = Long.parseLong(toZField.getText());
+        } catch (ClassCastException | NumberFormatException e) {
+            messageLabel.setText(guiManager.getResourceBundle().getString("invalidValues"));
+            return;
+        }
 
-        dispose();
+        // сначала чек что норм объект
+        if (!Route.checkName(routeName) || !Coordinates.checkX(coordinatesX) || !Coordinates.checkY(coordinatesY) || !LocationFrom.checkX(fromX) || !LocationFrom.checkY(fromY) || !LocationFrom.checkZ(fromZ) || !LocationTo.checkName(toName) || !LocationTo.checkX(toX) || !LocationTo.checkY(toY) || !LocationTo.checkZ(toZ) || !Route.checkDistance(distance)) {
+            messageLabel.setText(guiManager.getResourceBundle().getString("invalidValues"));
+            return;
+        }
+
+        Route route = new Route(routeName, new Coordinates(coordinatesX, coordinatesY), new LocationFrom(fromX, fromY, fromZ), new LocationTo(toName, toX, toY, toZ), distance);
+
+        // на серв
+        Response response = CommandInvoker.getInstance().runCommand("add", ReadModes.APP, route);
+
+        switch (response.getStatus()) {
+            case OK -> {
+                JOptionPane.showMessageDialog(null, "Объект успешно добавлен");
+                guiManager.getMainPanel().updateTableData();
+                dispose();
+            }
+            case CLIENT_ERROR -> {
+                messageLabel.setText(response.getMessage());
+            }
+            case SERVER_ERROR -> {
+                messageLabel.setText(guiManager.getResourceBundle().getString("serverError"));
+            }
+        }
     }
 
     private void onCancel() {

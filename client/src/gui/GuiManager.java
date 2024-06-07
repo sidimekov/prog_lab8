@@ -79,6 +79,10 @@ public class GuiManager {
         frame.setVisible(true);
     }
 
+    public MainPane getMainPanel() {
+        return mainPanel;
+    }
+
     public void openAddDialog() {
         AddDialog addDialog = new AddDialog();
 

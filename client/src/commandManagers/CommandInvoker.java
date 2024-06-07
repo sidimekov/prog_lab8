@@ -42,6 +42,9 @@ public class CommandInvoker {
     }
 
     public Response runCommand(String line, ReadModes readMode) {
+        return runCommand(line, readMode, null);
+    }
+    public Response runCommand(String line, ReadModes readMode, Object object) {
         String[] tokens = line.split(" ");
         String cmdName = tokens[0].toLowerCase();
         String[] args = Arrays.copyOfRange(tokens, 1, tokens.length);
@@ -54,6 +57,9 @@ public class CommandInvoker {
 
             Client client = Client.getInstance();
             CommandRequest request = new CommandRequest(cmdName, args);
+            if (object != null) {
+                request.setObject(object);
+            }
             request.setUser(Client.getInstance().getUser());
             request.setReadMode(readMode);
 
