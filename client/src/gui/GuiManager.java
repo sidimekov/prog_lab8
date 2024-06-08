@@ -1,9 +1,7 @@
 package gui;
 
-import gui.forms.AddDialog;
-import gui.forms.MainPane;
-import gui.forms.SignInPane;
-import gui.forms.SignUpPane;
+import entity.Route;
+import gui.forms.*;
 import network.Client;
 
 import javax.swing.*;
@@ -22,6 +20,7 @@ public class GuiManager {
     private ResourceBundle resourceBundle;
     private Locale locale;
     private Client client = Client.getInstance();
+    public static final String FONT_HTML_STRING = "<html><font name=\"Century Gothic\" size=\"4\"/>";
 
     private GuiManager(JFrame frame) {
         this.frame = frame;
@@ -29,6 +28,10 @@ public class GuiManager {
         this.frame.setSize(1024, 512);
         this.frame.setLocationRelativeTo(null);
         instance = this;
+    }
+
+    public JFrame getFrame() {
+        return frame;
     }
 
     public static GuiManager getInstance() {
@@ -95,6 +98,25 @@ public class GuiManager {
         addDialog.setLocationRelativeTo(null);
 
         addDialog.setVisible(true);
+    }
+    public void openOtherCommandsDialog() {
+        OtherCommandsDialog otherCommandsDialog = new OtherCommandsDialog();
+
+        otherCommandsDialog.setPreferredSize(new Dimension(800, 400));
+        otherCommandsDialog.pack();
+        otherCommandsDialog.setLocationRelativeTo(null);
+
+        otherCommandsDialog.setVisible(true);
+    }
+    public Route specifyRouteDialog() {
+        return specifyRouteDialog(null);
+    }
+    public Route specifyRouteDialog(Route route) {
+        SpecifyRouteDialog specifyRoute = new SpecifyRouteDialog(route);
+
+        specifyRoute.setVisible(true);
+
+        return specifyRoute.getSpecifiedRoute();
     }
 
     public Font getDefaultFont(int size) {

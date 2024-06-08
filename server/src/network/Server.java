@@ -314,13 +314,22 @@ public class Server {
 
         if (request.getReadMode() == ReadModes.APP) {
             Object object = request.getObject();
-            if (object instanceof Route) {
-                Route route = (Route) object;
+            if (object instanceof Route route) {
                 switch (cmdName) {
                     case "add" -> {
                         AddCommand add = (AddCommand) command;
 
                         add.setRouteToAdd(route);
+                    }
+                    case "add_if_min" -> {
+                        AddIfMinCommand addIfMin = (AddIfMinCommand) command;
+
+                        addIfMin.setRouteToAdd(route);
+                    }
+                    case "remove_greater" -> {
+                        RemoveGreaterCommand removeGreater = (RemoveGreaterCommand) command;
+
+                        removeGreater.setRouteToCompare(route);
                     }
                 }
             }

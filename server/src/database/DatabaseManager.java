@@ -221,7 +221,7 @@ public class DatabaseManager {
                         existingRouteUserId = getObjectSet.getLong(14);
                     }
 
-                    if (existingRouteUserId != -1) {
+                    if (existingRouteUserId != -1 && existingRouteUserId == userId) {
 
                         statement = connection.prepareStatement(QueryManager.REMOVE_USER_OBJECT);
                         statement.setLong(1, id);

@@ -23,7 +23,8 @@
               <font name="Century Gothic" size="16"/>
               <icon value="resources/user.png"/>
               <iconTextGap value="10"/>
-              <text value="Label"/>
+              <labelFor value="d46f7"/>
+              <text value="" noi18n="true"/>
             </properties>
           </component>
           <component id="f1a0d" class="javax.swing.JLabel" binding="mainHeader">

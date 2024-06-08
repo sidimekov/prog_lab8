@@ -228,7 +228,7 @@ public class RouteManager {
 
     public Route getMinElement(Long userId) {
         if (userId != null) {
-            PriorityQueue<Route> userColl = getDBCollection(userId);
+            PriorityQueue<Route> userColl = getDBCollection();
             return userColl.stream().min(new RouteComparator()).orElse(null);
         } else {
             return collection.stream().min(new RouteComparator()).orElse(null);
@@ -367,9 +367,7 @@ public class RouteManager {
                 .forEach(element -> {
                     try {
                         removeElement(element.getId(), userId);
-                    } catch (NoAccessToObjectException e) {
-                        throw new RuntimeException(e);
-                    }
+                    } catch (NoAccessToObjectException ignored) {}
                 });
     }
 

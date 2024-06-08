@@ -2,8 +2,10 @@ package commandManagers.commands;
 
 import commandManagers.RouteManager;
 import enums.ReadModes;
+import enums.ResponseStatus;
 import exceptions.NoAccessToObjectException;
 import network.Response;
+import network.Server;
 
 public class RemoveByIdCommand extends Command {
     public static final String USAGE = "remove_by_id <id>";
@@ -18,24 +20,25 @@ public class RemoveByIdCommand extends Command {
             try {
                 id = Long.parseLong(args[0]);
             } catch (NumberFormatException e) {
-                return new Response(String.format("Некорректные аргументы, используйте: %s\n", USAGE));
+                return new Response(String.format("Некорректные аргументы, используйте: %s\n", USAGE), ResponseStatus.CLIENT_ERROR);
             }
             if (rm.hasElement(id)) {
                 try {
                     removed = rm.removeElement(id, sender.getId());
                 } catch (NoAccessToObjectException e) {
-                    return new Response("Нет доступа к объекту с таким id");
+                    Server.getLogger().warning(e.getMessage());
+                    return new Response("Нет доступа к объекту с таким id", ResponseStatus.CLIENT_ERROR);
                 }
             } else {
-                return new Response("Нет элемента с таким id");
+                return new Response("Нет элемента с таким id", ResponseStatus.CLIENT_ERROR);
             }
         } else {
-            return new Response(String.format("Некорректные аргументы, используйте: %s\n", USAGE));
+            return new Response(String.format("Некорректные аргументы, используйте: %s\n", USAGE), ResponseStatus.CLIENT_ERROR);
         }
         if (removed) {
-            return new Response("Элемент удалён");
+            return new Response("Элемент удалён", ResponseStatus.OK);
         } else {
-            return new Response("Не удалось удалить элемент");
+            return new Response("Не удалось удалить элемент", ResponseStatus.SERVER_ERROR);
         }
     }
 

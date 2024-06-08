@@ -1,43 +1,42 @@
 package gui.forms;
 
-import commandManagers.CommandInvoker;
 import entity.Coordinates;
 import entity.LocationFrom;
 import entity.LocationTo;
 import entity.Route;
-import enums.ReadModes;
 import gui.GuiManager;
-import network.Response;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.*;
 
-public class AddDialog extends JDialog {
-    private GuiManager guiManager = GuiManager.getInstance();
-    private JPanel addObjectPane;
+public class SpecifyRouteDialog extends JDialog {
+    GuiManager guiManager = GuiManager.getInstance();
+
+    private JPanel specifyRoutePane;
     private JButton buttonOK;
     private JButton buttonCancel;
+    private JPanel lowerPanel;
+    private JPanel buttonLabel;
+    private JLabel messageLabel;
+    private JPanel upperPanel;
+    private JLabel headerLabel;
+    private JPanel midPanel;
     private JTextField routeNameField;
+    private JLabel routeNameLabel;
+    private JTextField routeDistanceField;
+    private JLabel routeDistanceLabel;
     private JPanel coodinatesPanel;
     private JTextField coordinatesXField;
     private JTextField coordinatesYField;
-    private JTextField routeDistanceField;
-    private JScrollPane midScroll;
-    private JPanel midPanel;
-    private JPanel buttonLabel;
-    private JPanel lowerPanel;
-    private JLabel routeNameLabel;
-    private JLabel routeDistanceLabel;
-    private JLabel coordinatesLabel;
     private JLabel coordinatesXLabel;
     private JLabel coordinatesYLabel;
+    private JLabel coordinatesLabel;
     private JLabel locationFromLabel;
     private JPanel locationFromPanel;
     private JTextField fromXField;
     private JTextField fromYField;
     private JTextField fromZField;
-    private JPanel upperPanel;
-    private JLabel headerLabel;
     private JTextField toXField;
     private JTextField toYField;
     private JLabel toXLabel;
@@ -46,13 +45,21 @@ public class AddDialog extends JDialog {
     private JLabel toZLabel;
     private JTextField toNameField;
     private JLabel toNameLabel;
-    private JLabel messageLabel;
-    private JCheckBox addIfMinCheckbox;
 
-    public AddDialog() {
-        setContentPane(addObjectPane);
+    private Route specifiedRoute;
+
+    public SpecifyRouteDialog() {
+        new SpecifyRouteDialog(null);
+    }
+
+    public SpecifyRouteDialog(Route route) {
+        setContentPane(specifyRoutePane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
+
+        setPreferredSize(new Dimension(800, 300));
+        pack();
+        setLocationRelativeTo(null);
 
         buttonOK.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -75,11 +82,26 @@ public class AddDialog extends JDialog {
         });
 
         // call onCancel() on ESCAPE
-        addObjectPane.registerKeyboardAction(new ActionListener() {
+        specifyRoutePane.registerKeyboardAction(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onCancel();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+        // если specifiedRoute уже указан, то для удобства восстанавливаем поля
+        if (route != null) {
+            routeNameField.setText(route.getName());
+            routeDistanceField.setText(String.valueOf(route.getDistance()));
+            coordinatesXField.setText(String.valueOf(route.getCoordinates().getX()));
+            coordinatesYField.setText(String.valueOf(route.getCoordinates().getY()));
+            fromXField.setText(String.valueOf(route.getFrom().getX()));
+            fromYField.setText(String.valueOf(route.getFrom().getY()));
+            fromZField.setText(String.valueOf(route.getFrom().getZ()));
+            toNameField.setText(route.getTo().getName());
+            toXField.setText(String.valueOf(route.getTo().getX()));
+            toYField.setText(String.valueOf(route.getTo().getY()));
+            toZField.setText(String.valueOf(route.getTo().getZ()));
+        }
     }
 
     private void onOK() {
@@ -116,41 +138,28 @@ public class AddDialog extends JDialog {
             return;
         }
 
-        Route route = new Route(routeName, new Coordinates(coordinatesX, coordinatesY), new LocationFrom(fromX, fromY, fromZ), new LocationTo(toName, toX, toY, toZ), distance);
+        specifiedRoute = new Route(routeName, new Coordinates(coordinatesX, coordinatesY), new LocationFrom(fromX, fromY, fromZ), new LocationTo(toName, toX, toY, toZ), distance);
 
-        // на серв
-        Response response;
-        if (addIfMinCheckbox.isSelected()) {
-            response = CommandInvoker.getInstance().runCommand("add_if_min", ReadModes.APP, route);
-        } else {
-            response = CommandInvoker.getInstance().runCommand("add", ReadModes.APP, route);
-        }
-
-        switch (response.getStatus()) {
-            case OK -> {
-                JOptionPane.showMessageDialog(null, guiManager.getResourceBundle().getString("addSuccess"));
-                guiManager.getMainPanel().updateTableData();
-                dispose();
-            }
-            case CLIENT_ERROR -> {
-                messageLabel.setText("<html>" + response.getMessage());
-                this.pack();
-            }
-            case SERVER_ERROR -> {
-                messageLabel.setText(guiManager.getResourceBundle().getString("serverError"));
-                this.pack();
-            }
-        }
+        dispose();
     }
 
     private void onCancel() {
+        // add your code here if necessary
         dispose();
     }
 
     public static void main(String[] args) {
-        AddDialog dialog = new AddDialog();
+        SpecifyRouteDialog dialog = new SpecifyRouteDialog();
         dialog.pack();
         dialog.setVisible(true);
         System.exit(0);
+    }
+
+    public Route getSpecifiedRoute() {
+        return specifiedRoute;
+    }
+
+    public void setSpecifiedRoute(Route specifiedRoute) {
+        this.specifiedRoute = specifiedRoute;
     }
 }

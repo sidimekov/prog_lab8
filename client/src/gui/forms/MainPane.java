@@ -45,6 +45,46 @@ public class MainPane {
                 }
             }
         });
+        removeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int row = mainTable.getSelectedRow();
+                if (row == -1) {
+                    JOptionPane.showMessageDialog(guiManager.getFrame(), GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("removeErrorSelectFirst"));
+                } else {
+                    Long id = (Long) mainTable.getModel().getValueAt(row, 0);
+                    String name = (String) mainTable.getModel().getValueAt(row, 1);
+
+                    String confirmMessage = GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("removeConfirm").replace("$name$", name);
+                    String confirmTitle = guiManager.getResourceBundle().getString("removeById");
+
+                    int result = JOptionPane.showConfirmDialog(guiManager.getFrame(), confirmMessage, confirmTitle, JOptionPane.YES_NO_OPTION);
+
+                    if (result == JOptionPane.YES_OPTION) {
+
+                        Response response = CommandInvoker.getInstance().runCommand(String.format("remove_by_id %s", id), ReadModes.APP);
+                        switch (response.getStatus()) {
+                            case OK -> {
+                                String removeOk = GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("removeOk").replace("$name$", name);
+                                JOptionPane.showMessageDialog(guiManager.getFrame(), removeOk);
+                                updateTableData();
+                            }
+                            case CLIENT_ERROR -> JOptionPane.showMessageDialog(guiManager.getFrame(), GuiManager.FONT_HTML_STRING + response.getMessage());
+                            case SERVER_ERROR -> JOptionPane.showMessageDialog(guiManager.getFrame(), GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("serverError"));
+                        }
+
+                    } else {
+
+                    }
+                }
+            }
+        });
+        otherButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                guiManager.openOtherCommandsDialog();
+            }
+        });
     }
 
     public JPanel getMainPanel() {
