@@ -6,6 +6,7 @@ import network.Client;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -91,7 +92,7 @@ public class GuiManager {
     }
 
     public void openAddDialog() {
-        AddDialog addDialog = new AddDialog();
+        AddDialog addDialog = new AddDialog(frame);
 
         addDialog.setPreferredSize(new Dimension(800, 500));
         addDialog.pack();
@@ -100,7 +101,7 @@ public class GuiManager {
         addDialog.setVisible(true);
     }
     public void openOtherCommandsDialog() {
-        OtherCommandsDialog otherCommandsDialog = new OtherCommandsDialog();
+        OtherCommandsDialog otherCommandsDialog = new OtherCommandsDialog(frame);
 
         otherCommandsDialog.setPreferredSize(new Dimension(800, 400));
         otherCommandsDialog.pack();
@@ -108,11 +109,44 @@ public class GuiManager {
 
         otherCommandsDialog.setVisible(true);
     }
+
+    public File chooseFile() {
+        return chooseFile(null);
+    }
+
+    public File chooseFile(File chosenFile) {
+//        ChooseFileDialog chooseFile = new ChooseFileDialog(frame);
+//
+//        chooseFile.setSize(720,720);
+//        chooseFile.setModal(true);
+//        chooseFile.pack();
+//        chooseFile.setLocationRelativeTo(null);
+//
+//        chooseFile.setVisible(true);
+//
+//        return chooseFile.getSelectedFile();
+
+        JFileChooser fileChooser;
+        if (chosenFile != null) {
+            fileChooser = new JFileChooser(chosenFile.getPath());
+        } else {
+            fileChooser = new JFileChooser();
+        }
+
+        int result = fileChooser.showOpenDialog(frame);
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+            return fileChooser.getSelectedFile();
+        } else {
+            return null;
+        }
+    }
+
     public Route specifyRouteDialog() {
         return specifyRouteDialog(null);
     }
     public Route specifyRouteDialog(Route route) {
-        SpecifyRouteDialog specifyRoute = new SpecifyRouteDialog(route);
+        SpecifyRouteDialog specifyRoute = new SpecifyRouteDialog(frame, route);
 
         specifyRoute.setVisible(true);
 

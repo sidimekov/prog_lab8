@@ -26,6 +26,7 @@ public class MainPane {
     private JButton otherButton;
     private JScrollPane tablePanel;
     private JButton logoutButton;
+    private JButton refreshButton;
 
     public MainPane() {
         addButton.addActionListener(new ActionListener() {
@@ -83,6 +84,12 @@ public class MainPane {
             @Override
             public void actionPerformed(ActionEvent e) {
                 guiManager.openOtherCommandsDialog();
+            }
+        });
+        refreshButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateTableData();
             }
         });
     }

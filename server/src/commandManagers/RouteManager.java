@@ -316,7 +316,7 @@ public class RouteManager {
     }
 
     public long countGreaterThanDistance(double distance, long userId) {
-        PriorityQueue<Route> userColl = getDBCollection(userId);
+        PriorityQueue<Route> userColl = getCollection();
         return userColl
                 .stream()
                 .filter(el -> (el.getDistance() > distance))
@@ -373,8 +373,9 @@ public class RouteManager {
 
     public boolean removeFirst(long userId) throws NoAccessToObjectException {
         boolean removed = false;
-        if (!collection.isEmpty()) {
-            long firstId = getCollection().element().getId();
+        PriorityQueue<Route> userCol = getDBCollection(userId);
+        if (!userCol.isEmpty()) {
+            long firstId = userCol.element().getId();
             removed = removeElement(firstId, userId);
         }
         return removed;
@@ -405,7 +406,7 @@ public class RouteManager {
 
 
     public Object[][] getTableData(){
-        return getCollection().stream()
+        return getDBCollection().stream()
                 .map(this::createRow)
                 .toArray(Object[][]::new);
     }

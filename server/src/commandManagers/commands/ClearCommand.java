@@ -2,6 +2,7 @@ package commandManagers.commands;
 
 import commandManagers.RouteManager;
 import enums.ReadModes;
+import enums.ResponseStatus;
 import network.Response;
 import network.User;
 
@@ -18,9 +19,9 @@ public class ClearCommand extends Command {
         RouteManager rm = RouteManager.getInstance();
         boolean cleared = rm.clearUserObjects(sender.getId());
         if (cleared) {
-            return new Response("Коллекция очищена");
+            return new Response("Коллекция очищена", ResponseStatus.OK);
         } else {
-            return new Response("Произошла ошибка при очищении вашей коллекции");
+            return new Response("Произошла ошибка при очищении вашей коллекции", ResponseStatus.SERVER_ERROR);
         }
     }
 

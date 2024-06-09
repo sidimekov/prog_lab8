@@ -2,6 +2,7 @@ package commandManagers.commands;
 
 import commandManagers.RouteManager;
 import enums.ReadModes;
+import enums.ResponseStatus;
 import exceptions.NoAccessToObjectException;
 import network.Response;
 
@@ -12,19 +13,19 @@ public class RemoveFirstCommand extends Command {
     @Override
     public Response execute(ReadModes readMode, String[] args) {
         RouteManager rm = RouteManager.getInstance();
-        if (!rm.getCollection().isEmpty()) {
+        if (!rm.getDBCollection(sender.getId()).isEmpty()) {
             try {
                 boolean removed = rm.removeFirst(sender.getId());
                 if (removed) {
-                    return new Response("Первый элемент коллекции удалён");
+                    return new Response("Первый элемент коллекции удалён", ResponseStatus.OK);
                 } else {
-                    return new Response("Не удалось удалить первый элемент, возможно у вас нет доступа к нему");
+                    return new Response("Не удалось удалить первый элемент", ResponseStatus.CLIENT_ERROR);
                 }
             } catch (NoAccessToObjectException e) {
-                return new Response("Нет доступа к элементу");
+                return new Response("Нет доступа к элементу", ResponseStatus.CLIENT_ERROR);
             }
         } else {
-            return new Response("Коллекция уже пуста!");
+            return new Response("Уже нет элементов, которыми вы владеете!", ResponseStatus.CLIENT_ERROR);
         }
     }
 

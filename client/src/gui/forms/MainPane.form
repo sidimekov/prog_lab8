@@ -58,6 +58,17 @@
               <text resource-bundle="resources/gui" key="logoutButton"/>
             </properties>
           </component>
+          <component id="466d3" class="javax.swing.JButton" binding="refreshButton">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="1" use-parent-layout="false">
+                <preferred-size width="100" height="20"/>
+                <maximum-size width="100" height="20"/>
+              </grid>
+            </constraints>
+            <properties>
+              <text resource-bundle="resources/gui" key="refresh"/>
+            </properties>
+          </component>
         </children>
       </grid>
       <grid id="1a905" binding="lowerPanel" layout-manager="GridLayoutManager" row-count="1" column-count="5" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">

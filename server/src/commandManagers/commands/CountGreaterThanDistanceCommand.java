@@ -2,6 +2,7 @@ package commandManagers.commands;
 
 import commandManagers.RouteManager;
 import enums.ReadModes;
+import enums.ResponseStatus;
 import network.Response;
 
 public class CountGreaterThanDistanceCommand extends Command {
@@ -15,12 +16,12 @@ public class CountGreaterThanDistanceCommand extends Command {
             double distance;
             try {
                 distance = Double.parseDouble(args[0]);
-                return new Response(String.format("Количество элементов с дистанцией выше введённой: %s\n", rm.countGreaterThanDistance(distance, sender.getId())));
+                return new Response(String.format("Количество элементов с дистанцией выше введённой: %s\n", rm.countGreaterThanDistance(distance, sender.getId())), ResponseStatus.OK);
             } catch (NumberFormatException e) {
-                return new Response(String.format("Некорректные аргументы: использование: %s\n", USAGE));
+                return new Response(String.format("Некорректные аргументы: использование: %s\n", USAGE), ResponseStatus.CLIENT_ERROR);
             }
         } else {
-            return new Response(String.format("Некорректные аргументы, использование: %s\n", USAGE));
+            return new Response(String.format("Некорректные аргументы, использование: %s\n", USAGE), ResponseStatus.CLIENT_ERROR);
         }
     }
 

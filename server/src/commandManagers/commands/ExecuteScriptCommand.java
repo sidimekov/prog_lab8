@@ -2,6 +2,7 @@ package commandManagers.commands;
 
 import commandManagers.CommandInvoker;
 import enums.ReadModes;
+import enums.ResponseStatus;
 import network.CommandRequest;
 import network.Response;
 import network.Server;
@@ -27,10 +28,9 @@ public class ExecuteScriptCommand extends Command {
 
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        if (readMode == ReadModes.CONSOLE) {
-                            invoker.clearScriptCounter();
-                        } else {
-                            invoker.scriptCount();
+                        switch (readMode) {
+                            case CONSOLE, APP -> invoker.clearScriptCounter();
+                            case FILE -> invoker.scriptCount();
                         }
                         if (invoker.getScriptCounter() < invoker.SCRIPT_RECURSION_LIMIT) {
                             CommandRequest req = invoker.createRequest(line, ReadModes.FILE, sender);
@@ -47,20 +47,20 @@ public class ExecuteScriptCommand extends Command {
                         } else {
                             // чтоб не спамило:
                             if (invoker.getScriptCounter() == invoker.SCRIPT_RECURSION_LIMIT)
-                                return new Response("Рекурсивный вызов скриптов!");
+                                return new Response("Рекурсивный вызов скриптов!", ResponseStatus.CLIENT_ERROR);
                             break;
                         }
                     }
-                    return new Response(totalResponse.toString());
+                    return new Response(totalResponse.toString(), ResponseStatus.OK);
                 } catch (IOException e) {
 //                throw new RuntimeException(e);
-                    return new Response("Не удалось считать данные из файла (возможно, файл не найден)");
+                    return new Response("Не удалось считать данные из файла (возможно, файл не найден)", ResponseStatus.CLIENT_ERROR);
                 }
             } else {
-                return new Response("Не удалось получить содержимое файла");
+                return new Response("Не удалось получить содержимое файла", ResponseStatus.SERVER_ERROR);
             }
         } else {
-            return new Response(String.format("Неверное количество аргументов (got %s, expected 1)", args.length));
+            return new Response(String.format("Неверное количество аргументов (got %s, expected 1)", args.length), ResponseStatus.CLIENT_ERROR);
         }
     }
 

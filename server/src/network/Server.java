@@ -331,6 +331,11 @@ public class Server {
 
                         removeGreater.setRouteToCompare(route);
                     }
+                    case "update" -> {
+                        UpdateCommand update = (UpdateCommand) command;
+
+                        update.setRouteToUpdate(route);
+                    }
                 }
             }
         }

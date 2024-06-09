@@ -10,6 +10,7 @@ import gui.GuiManager;
 import network.Response;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.*;
 
 public class AddDialog extends JDialog {
@@ -49,7 +50,9 @@ public class AddDialog extends JDialog {
     private JLabel messageLabel;
     private JCheckBox addIfMinCheckbox;
 
-    public AddDialog() {
+    public AddDialog(Frame frame) {
+        super(frame);
+
         setContentPane(addObjectPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
@@ -148,7 +151,7 @@ public class AddDialog extends JDialog {
     }
 
     public static void main(String[] args) {
-        AddDialog dialog = new AddDialog();
+        AddDialog dialog = new AddDialog(GuiManager.getInstance().getFrame());
         dialog.pack();
         dialog.setVisible(true);
         System.exit(0);

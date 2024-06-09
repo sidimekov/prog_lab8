@@ -2,7 +2,9 @@ package commandManagers.commands;
 
 import commandManagers.RouteManager;
 import enums.ReadModes;
+import enums.ResponseStatus;
 import network.Response;
+import network.Server;
 
 public class RemoveAllByDistanceCommand extends Command {
     private final String USAGE = "remove_all_by_distance <дистанция(double)>";
@@ -19,14 +21,15 @@ public class RemoveAllByDistanceCommand extends Command {
                 try {
                     rm.removeAllByDistance(distance, sender.getId());
                 } catch (RuntimeException e) {
-                    return  new Response("Не удалось удалить объекты с указанной дистанцией");
+                    Server.getLogger().warning("Не удалось удалить объекты с указанной дистанцией");
+                    return  new Response("Не удалось удалить объекты с указанной дистанцией", ResponseStatus.SERVER_ERROR);
                 }
-                return new Response(String.format("Все ваши элементы с дистанцией %s удалены\n", distance));
+                return new Response(String.format("Все ваши элементы с дистанцией %s удалены\n", distance), ResponseStatus.OK);
             } catch (NumberFormatException e) {
-                return new Response("Некорректная дистанция");
+                return new Response("Некорректная дистанция", ResponseStatus.CLIENT_ERROR);
             }
         } else {
-            return new Response(String.format("Некорректные аргументы, использование: %s\n", USAGE));
+            return new Response(String.format("Некорректные аргументы, использование: %s\n", USAGE), ResponseStatus.CLIENT_ERROR);
         }
     }
 

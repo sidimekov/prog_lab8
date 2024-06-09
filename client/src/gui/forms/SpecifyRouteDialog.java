@@ -48,11 +48,13 @@ public class SpecifyRouteDialog extends JDialog {
 
     private Route specifiedRoute;
 
-    public SpecifyRouteDialog() {
-        new SpecifyRouteDialog(null);
+    public SpecifyRouteDialog(Frame frame) {
+        new SpecifyRouteDialog(frame, null);
     }
 
-    public SpecifyRouteDialog(Route route) {
+    public SpecifyRouteDialog(Frame frame, Route route) {
+        super(frame);
+
         setContentPane(specifyRoutePane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
@@ -149,7 +151,7 @@ public class SpecifyRouteDialog extends JDialog {
     }
 
     public static void main(String[] args) {
-        SpecifyRouteDialog dialog = new SpecifyRouteDialog();
+        SpecifyRouteDialog dialog = new SpecifyRouteDialog(GuiManager.getInstance().getFrame());
         dialog.pack();
         dialog.setVisible(true);
         System.exit(0);

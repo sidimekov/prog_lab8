@@ -2,6 +2,7 @@ package gui.forms;
 
 import commandManagers.CommandInvoker;
 import entity.Route;
+import enums.Commands;
 import enums.ReadModes;
 import gui.GuiManager;
 import network.Response;
@@ -9,10 +10,14 @@ import network.Response;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.util.ResourceBundle;
 
 public class OtherCommandsDialog extends JDialog {
     GuiManager guiManager = GuiManager.getInstance();
+    ResourceBundle resourceBundle = guiManager.getResourceBundle();
     Route specifiedRoute = null;
+    File chosenFile = null;
 
     private JPanel commandsPane;
     private JButton buttonOK;
@@ -25,7 +30,7 @@ public class OtherCommandsDialog extends JDialog {
     private JPanel removeByDistanceCard;
     private JPanel removeFirstCard;
     private JPanel removeGreaterCard;
-    private JComboBox commandCombo;
+    private JComboBox<Commands> commandCombo;
     private JPanel upperPanel;
     private JLabel headerLabel;
     private JPanel defaultCard;
@@ -53,7 +58,40 @@ public class OtherCommandsDialog extends JDialog {
     private JLabel executeScriptLabel;
     private JButton executeScriptSpecifyButton;
 
-    public OtherCommandsDialog() {
+    public OtherCommandsDialog(Frame frame) {
+        super(frame);
+
+        commandCombo.setFont(guiManager.getDefaultFont());
+        commandCombo.addItem(null);
+
+        Commands update = Commands.UPDATE;
+        update.setDisplayText(resourceBundle.getString("update"));
+        commandCombo.addItem(update);
+
+        Commands clear = Commands.CLEAR;
+        clear.setDisplayText(resourceBundle.getString("clear"));
+        commandCombo.addItem(clear);
+
+        Commands countGreaterThanDistance = Commands.COUNT_GREATER_THAN_DISTANCE;
+        countGreaterThanDistance.setDisplayText(resourceBundle.getString("countGreaterThanDistance"));
+        commandCombo.addItem(countGreaterThanDistance);
+
+        Commands executeScript = Commands.EXECUTE_SCRIPT;
+        executeScript.setDisplayText(resourceBundle.getString("executeScript"));
+        commandCombo.addItem(executeScript);
+
+        Commands removeAllByDistance = Commands.REMOVE_ALL_BY_DISTANCE;
+        removeAllByDistance.setDisplayText(resourceBundle.getString("removeAllByDistance"));
+        commandCombo.addItem(removeAllByDistance);
+
+        Commands removeFirst = Commands.REMOVE_FIRST;
+        removeFirst.setDisplayText(resourceBundle.getString("removeFirst"));
+        commandCombo.addItem(removeFirst);
+
+        Commands removeGreater = Commands.REMOVE_GREATER;
+        removeGreater.setDisplayText(resourceBundle.getString("removeGreater"));
+        commandCombo.addItem(removeGreater);
+
         setContentPane(commandsPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
@@ -90,11 +128,12 @@ public class OtherCommandsDialog extends JDialog {
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
                     CardLayout cl = (CardLayout) commandPanel.getLayout();
-                    cl.show(commandPanel, (String) e.getItem());
+                    cl.show(commandPanel, ((Commands) e.getItem()).name());
                 }
             }
         });
-        removeGreaterSpecifyButton.addActionListener(new ActionListener() {
+
+        ActionListener specifyRouteListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 specifiedRoute = guiManager.specifyRouteDialog(specifiedRoute);
@@ -104,35 +143,212 @@ public class OtherCommandsDialog extends JDialog {
                     messageLabel.setText("Route specified");
                 }
             }
+        };
+
+        removeGreaterSpecifyButton.addActionListener(specifyRouteListener);
+        updateSpecifyButton.addActionListener(specifyRouteListener);
+        executeScriptSpecifyButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                chosenFile = guiManager.chooseFile(chosenFile);
+                messageLabel.setForeground(Color.BLACK);
+                messageLabel.setText(resourceBundle.getString("fileChosen"));
+            }
         });
     }
 
     private void onOK() {
-        // на серв
 
-        if (specifiedRoute != null) {
+        if (commandCombo.getSelectedItem() != null) {
+            switch ((Commands) commandCombo.getSelectedItem()) {
+                case REMOVE_GREATER -> {
+                    if (specifiedRoute != null) {
 
-            Response response = CommandInvoker.getInstance().runCommand("remove_greater", ReadModes.APP, specifiedRoute);
-            specifiedRoute = null;
+                        Response response = CommandInvoker.getInstance().runCommand("remove_greater", ReadModes.APP, specifiedRoute);
 
-            switch (response.getStatus()) {
-                case OK -> {
-                    JOptionPane.showMessageDialog(null, guiManager.getResourceBundle().getString("removeGreaterSuccess"));
-                    guiManager.getMainPanel().updateTableData();
-                    dispose();
+                        switch (response.getStatus()) {
+                            case OK -> {
+                                JOptionPane.showMessageDialog(null, guiManager.getResourceBundle().getString("removeGreaterSuccess"));
+                                guiManager.getMainPanel().updateTableData();
+                                specifiedRoute = null;
+                                dispose();
+                            }
+                            case CLIENT_ERROR -> {
+                                messageLabel.setForeground(Color.RED);
+                                messageLabel.setText(GuiManager.FONT_HTML_STRING + response.getMessage());
+                            }
+                            case SERVER_ERROR -> {
+                                messageLabel.setForeground(Color.RED);
+                                messageLabel.setText(GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("serverError"));
+                            }
+                        }
+                    } else {
+                        messageLabel.setForeground(Color.RED);
+                        messageLabel.setText(guiManager.getResourceBundle().getString("errorSpecifyRoute"));
+                    }
                 }
-                case CLIENT_ERROR -> {
-                    messageLabel.setText(GuiManager.FONT_HTML_STRING + response.getMessage());
+                case REMOVE_ALL_BY_DISTANCE -> {
+                    try {
+                        double distance = Double.parseDouble(removeByDistanceField.getText());
+
+
+                        Response response = CommandInvoker.getInstance().runCommand(String.format("remove_all_by_distance %s", distance), ReadModes.APP);
+
+                        switch (response.getStatus()) {
+                            case OK -> {
+                                JOptionPane.showMessageDialog(null, guiManager.getResourceBundle().getString("removeByDistanceSuccess"));
+                                guiManager.getMainPanel().updateTableData();
+                                dispose();
+                            }
+                            case CLIENT_ERROR -> {
+                                messageLabel.setForeground(Color.RED);
+                                messageLabel.setText(GuiManager.FONT_HTML_STRING + response.getMessage());
+                            }
+                            case SERVER_ERROR -> {
+                                messageLabel.setForeground(Color.RED);
+                                messageLabel.setText(GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("serverError"));
+                            }
+                        }
+
+                    } catch (NumberFormatException e) {
+                        messageLabel.setForeground(Color.RED);
+                        messageLabel.setText(guiManager.getResourceBundle().getString("invalidDistance"));
+                    }
                 }
-                case SERVER_ERROR -> {
-                    messageLabel.setText(GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("serverError"));
+                case REMOVE_FIRST -> {
+                    Response response = CommandInvoker.getInstance().runCommand("remove_first", ReadModes.APP);
+
+                    switch (response.getStatus()) {
+                        case OK -> {
+                            JOptionPane.showMessageDialog(null, guiManager.getResourceBundle().getString("removeFirstSuccess"));
+                            guiManager.getMainPanel().updateTableData();
+                            dispose();
+                        }
+                        case CLIENT_ERROR -> {
+                            messageLabel.setForeground(Color.RED);
+                            messageLabel.setText(GuiManager.FONT_HTML_STRING + response.getMessage());
+                        }
+                        case SERVER_ERROR -> {
+                            messageLabel.setForeground(Color.RED);
+                            messageLabel.setText(GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("serverError"));
+                        }
+                    }
+                }
+                case UPDATE -> {
+                    try {
+                        long id = Long.parseLong(updateIdField.getText());
+                        if (specifiedRoute != null) {
+
+                            specifiedRoute.setId(id);
+                            Response response = CommandInvoker.getInstance().runCommand("update", ReadModes.APP, specifiedRoute);
+
+                            switch (response.getStatus()) {
+                                case OK -> {
+                                    String displayMessage = guiManager.getResourceBundle().getString("updateSuccess");
+                                    displayMessage = displayMessage.replace("$id$", String.valueOf(id));
+                                    displayMessage = displayMessage.replace("$name$", specifiedRoute.getName());
+                                    JOptionPane.showMessageDialog(null, displayMessage);
+                                    guiManager.getMainPanel().updateTableData();
+                                    specifiedRoute = null;
+                                    dispose();
+                                }
+                                case CLIENT_ERROR -> {
+                                    messageLabel.setForeground(Color.RED);
+                                    messageLabel.setText(GuiManager.FONT_HTML_STRING + response.getMessage());
+                                }
+                                case SERVER_ERROR -> {
+                                    messageLabel.setForeground(Color.RED);
+                                    messageLabel.setText(GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("serverError"));
+                                }
+                            }
+                        } else {
+                            messageLabel.setForeground(Color.RED);
+                            messageLabel.setText(guiManager.getResourceBundle().getString("errorSpecifyRoute"));
+                        }
+                    } catch (NumberFormatException e) {
+                        messageLabel.setForeground(Color.RED);
+                        messageLabel.setText(guiManager.getResourceBundle().getString("invalidId"));
+                    }
+                }
+                case CLEAR -> {
+                    Response response = CommandInvoker.getInstance().runCommand("clear", ReadModes.APP);
+
+                    switch (response.getStatus()) {
+                        case OK -> {
+                            String displayMessage = guiManager.getResourceBundle().getString("clearSuccess");
+                            JOptionPane.showMessageDialog(null, displayMessage);
+                            guiManager.getMainPanel().updateTableData();
+                            dispose();
+                        }
+                        case CLIENT_ERROR -> {
+                            messageLabel.setForeground(Color.RED);
+                            messageLabel.setText(GuiManager.FONT_HTML_STRING + response.getMessage());
+                        }
+                        case SERVER_ERROR -> {
+                            messageLabel.setForeground(Color.RED);
+                            messageLabel.setText(GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("serverError"));
+                        }
+                    }
+                }
+                case COUNT_GREATER_THAN_DISTANCE -> {
+                    try {
+                        double id = Double.parseDouble(countGreaterThanDistanceField.getText());
+
+                        Response response = CommandInvoker.getInstance().runCommand(String.format("count_greater_than_distance %s", id), ReadModes.APP);
+
+                        switch (response.getStatus()) {
+                            case OK -> {
+                                JOptionPane.showMessageDialog(null, response.getMessage());
+                                guiManager.getMainPanel().updateTableData();
+                            }
+                            case CLIENT_ERROR -> {
+                                messageLabel.setForeground(Color.RED);
+                                messageLabel.setText(GuiManager.FONT_HTML_STRING + response.getMessage());
+                            }
+                            case SERVER_ERROR -> {
+                                messageLabel.setForeground(Color.RED);
+                                messageLabel.setText(GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("serverError"));
+                            }
+                        }
+                    } catch (NumberFormatException e) {
+                        messageLabel.setForeground(Color.RED);
+                        messageLabel.setText(resourceBundle.getString("invalidDistance"));
+                    }
+                }
+                case EXECUTE_SCRIPT -> {
+                    File script = chosenFile;
+                    if (script != null) {
+
+                        Response response = CommandInvoker.getInstance().runCommand(String.format("execute_script %s", script.getPath()), ReadModes.APP);
+
+                        switch (response.getStatus()) {
+                            case OK -> {
+                                JOptionPane.showMessageDialog(null, response.getMessage());
+                                guiManager.getMainPanel().updateTableData();
+                                chosenFile = null;
+                                dispose();
+                            }
+                            case CLIENT_ERROR -> {
+                                messageLabel.setForeground(Color.RED);
+                                messageLabel.setText(GuiManager.FONT_HTML_STRING + response.getMessage());
+                            }
+                            case SERVER_ERROR -> {
+                                messageLabel.setForeground(Color.RED);
+                                messageLabel.setText(GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("serverError"));
+                            }
+                        }
+                    } else {
+                        messageLabel.setForeground(Color.RED);
+                        messageLabel.setText(GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("chooseFileFirst"));
+                    }
                 }
             }
-            dispose();
         } else {
             messageLabel.setForeground(Color.RED);
-            messageLabel.setText(guiManager.getResourceBundle().getString("errorSpecifyRoute"));
+            messageLabel.setText(guiManager.getResourceBundle().getString("specifyCommand"));
         }
+
+
     }
 
     private void onCancel() {
@@ -141,9 +357,14 @@ public class OtherCommandsDialog extends JDialog {
     }
 
     public static void main(String[] args) {
-        OtherCommandsDialog dialog = new OtherCommandsDialog();
+        OtherCommandsDialog dialog = new OtherCommandsDialog(GuiManager.getInstance().getFrame());
         dialog.pack();
         dialog.setVisible(true);
         System.exit(0);
+    }
+
+
+    private void createUIComponents() {
+        commandCombo = new JComboBox<>();
     }
 }
