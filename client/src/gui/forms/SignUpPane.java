@@ -5,10 +5,14 @@ import enums.ReadModes;
 import gui.GuiManager;
 import network.Response;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 public class SignUpPane extends JPanel {
     GuiManager guiManager = GuiManager.getInstance();
@@ -33,6 +37,14 @@ public class SignUpPane extends JPanel {
         rightPanel = new JPanel(new GridLayout());
         rightPanel.setBounds(512,0,512, 512);
         rightPanel.setBackground(new Color(0,180,170));
+
+        try {
+            BufferedImage pelmeni = ImageIO.read(new File("client/src/resources/pelmeni.png"));
+            JLabel pelmeniLabel = new JLabel(new ImageIcon(pelmeni));
+            rightPanel.add(pelmeniLabel);
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
 
 //        leftPanel = new JPanel(new GridLayout(10, 1, 10, 10));
         leftPanel = new JPanel();
