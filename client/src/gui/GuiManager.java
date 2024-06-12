@@ -3,18 +3,18 @@ package gui;
 import entity.Route;
 import gui.forms.*;
 import network.Client;
+import network.User;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 public class GuiManager {
     private static GuiManager instance;
-    private final JFrame frame;
+    private final MainFrame mainFrame;
+    private final VisualizationForm visualizationForm;
     private SignInPane signInForm;
     private SignUpPane signUpForm;
     private MainPane mainPanel;
@@ -23,21 +23,19 @@ public class GuiManager {
     private Client client = Client.getInstance();
     public static final String FONT_HTML_STRING = "<html><font name=\"Century Gothic\" size=\"4\"/>";
 
-    private GuiManager(JFrame frame) {
-        this.frame = frame;
-        this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.frame.setSize(1024, 512);
-        this.frame.setLocationRelativeTo(null);
+    private GuiManager(MainFrame frame, VisualizationForm visualizationForm) {
+        this.mainFrame = frame;
+        this.visualizationForm = visualizationForm;
         instance = this;
     }
 
-    public JFrame getFrame() {
-        return frame;
+    public JFrame getMainFrame() {
+        return mainFrame;
     }
 
     public static GuiManager getInstance() {
         if (instance == null) {
-            instance = new GuiManager(new JFrame());
+            instance = new GuiManager(new MainFrame(), new VisualizationForm());
         }
         instance.updateLocale(null);
         return instance;
@@ -51,45 +49,49 @@ public class GuiManager {
     }
 
     public void openSignInPanel() {
-        frame.setContentPane(signInForm.getSignInPanel());
-        frame.pack();
-        frame.setSize(1024, 512);
-        frame.setLocationRelativeTo(null);
-        frame.setResizable(false);
-        frame.setVisible(true);
+        mainFrame.setContentPane(signInForm.getSignInPanel());
+        mainFrame.pack();
+        mainFrame.setSize(1024, 512);
+        mainFrame.setLocationRelativeTo(null);
+        mainFrame.setResizable(false);
+        mainFrame.setVisible(true);
     }
     public void openSignInPanel(String message) {
         signInForm.clearMessageLabel();
         signInForm.setMessageLabel(message);
-        frame.setSize(1024, 512);
-        frame.setLocationRelativeTo(null);
-        frame.setResizable(false);
+        mainFrame.setSize(1024, 512);
+        mainFrame.setLocationRelativeTo(null);
+        mainFrame.setResizable(false);
         openSignInPanel();
 //        signInForm.setAuthMessageLabel(null);
     }
 
     public void openSingUpPanel() {
-        JPanel signUpPanel = signUpForm.getSignUpPanel();
 //        frame.add()
-        frame.setContentPane(signUpPanel);
-        frame.setSize(1024, 512);
-        frame.pack();
-        frame.setResizable(false);
-        frame.setVisible(true);
+        mainFrame.setContentPane(signUpForm.getSignUpPanel());
+        mainFrame.setSize(1024, 512);
+        mainFrame.pack();
+        mainFrame.setResizable(false);
+        mainFrame.setVisible(true);
     }
 
     public void openMainPanel() {
-        frame.setContentPane(mainPanel.getMainPanel());
+        mainFrame.setContentPane(mainPanel.getMainPanel());
 
         mainPanel.updateTableData();
         mainPanel.updateUserLabel(client.getUser().getLogin());
 
-        frame.setPreferredSize(new Dimension(1440, 720));
-        frame.pack();
-        frame.setLocationRelativeTo(null);
-        frame.setResizable(true);
+        mainFrame.setPreferredSize(new Dimension(1440, 720));
+        mainFrame.pack();
+        mainFrame.setLocationRelativeTo(null);
+        mainFrame.setResizable(true);
 //        frame.pack();
-        frame.setVisible(true);
+        mainFrame.setVisible(true);
+    }
+
+    public void openVisualization() {
+        visualizationForm.open();
+        visualizationForm.setVisible(true);
     }
 
     public MainPane getMainPanel() {
@@ -97,7 +99,7 @@ public class GuiManager {
     }
 
     public void openAddDialog() {
-        AddDialog addDialog = new AddDialog(frame);
+        AddDialog addDialog = new AddDialog(mainFrame);
 
         addDialog.setPreferredSize(new Dimension(800, 500));
         addDialog.pack();
@@ -106,7 +108,7 @@ public class GuiManager {
         addDialog.setVisible(true);
     }
     public void openOtherCommandsDialog() {
-        OtherCommandsDialog otherCommandsDialog = new OtherCommandsDialog(frame);
+        OtherCommandsDialog otherCommandsDialog = new OtherCommandsDialog(mainFrame);
 
         otherCommandsDialog.setPreferredSize(new Dimension(800, 400));
         otherCommandsDialog.pack();
@@ -138,7 +140,7 @@ public class GuiManager {
             fileChooser = new JFileChooser();
         }
 
-        int result = fileChooser.showOpenDialog(frame);
+        int result = fileChooser.showOpenDialog(mainFrame);
 
         if (result == JFileChooser.APPROVE_OPTION) {
             return fileChooser.getSelectedFile();
@@ -151,7 +153,7 @@ public class GuiManager {
         return specifyRouteDialog(null);
     }
     public Route specifyRouteDialog(Route route) {
-        SpecifyRouteDialog specifyRoute = new SpecifyRouteDialog(frame, route);
+        SpecifyRouteDialog specifyRoute = new SpecifyRouteDialog(mainFrame, route);
 
         specifyRoute.setVisible(true);
 
@@ -196,5 +198,12 @@ public class GuiManager {
         return resourceBundle;
     }
 
+    public Color randomColor() {
+        Random rand = new Random();
+        float r = 0.1f + rand.nextFloat() * 0.8f;
+        float g = 0.1f + rand.nextFloat() * 0.8f;
+        float b = 0.1f + rand.nextFloat() * 0.8f;
+        return new Color(r,g,b);
+    }
 
 }

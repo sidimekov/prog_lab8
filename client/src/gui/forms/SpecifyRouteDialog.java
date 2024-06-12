@@ -151,7 +151,7 @@ public class SpecifyRouteDialog extends JDialog {
     }
 
     public static void main(String[] args) {
-        SpecifyRouteDialog dialog = new SpecifyRouteDialog(GuiManager.getInstance().getFrame());
+        SpecifyRouteDialog dialog = new SpecifyRouteDialog(GuiManager.getInstance().getMainFrame());
         dialog.pack();
         dialog.setVisible(true);
         System.exit(0);

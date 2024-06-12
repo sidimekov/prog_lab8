@@ -357,7 +357,7 @@ public class OtherCommandsDialog extends JDialog {
     }
 
     public static void main(String[] args) {
-        OtherCommandsDialog dialog = new OtherCommandsDialog(GuiManager.getInstance().getFrame());
+        OtherCommandsDialog dialog = new OtherCommandsDialog(GuiManager.getInstance().getMainFrame());
         dialog.pack();
         dialog.setVisible(true);
         System.exit(0);

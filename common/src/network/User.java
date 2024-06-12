@@ -1,5 +1,6 @@
 package network;
 
+import java.awt.*;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
@@ -50,7 +51,7 @@ public class User implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(login, password);
+        return Objects.hash(login, id);
     }
 
     @Override
@@ -60,5 +61,10 @@ public class User implements Serializable {
                 ", login='" + login + '\'' +
                 ", password='" + password + '\'' +
                 '}';
+    }
+
+    public Color userColor() {
+        int hash = hashCode();
+        return new Color(hash);
     }
 }

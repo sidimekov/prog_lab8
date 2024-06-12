@@ -151,7 +151,7 @@ public class AddDialog extends JDialog {
     }
 
     public static void main(String[] args) {
-        AddDialog dialog = new AddDialog(GuiManager.getInstance().getFrame());
+        AddDialog dialog = new AddDialog(GuiManager.getInstance().getMainFrame());
         dialog.pack();
         dialog.setVisible(true);
         System.exit(0);

@@ -7,6 +7,7 @@ import entity.Route;
 import exceptions.NoAccessToObjectException;
 import network.Server;
 import network.User;
+import org.postgresql.util.PSQLException;
 import util.HashManager;
 
 import java.sql.*;
@@ -23,7 +24,7 @@ public class DatabaseManager {
 //            return DriverManager.getConnection("jdbc:postgresql://pg:5432/studs", "s409553", "nWASInv7Uumwyf0P");
         } catch (SQLException e) {
             logger.severe("Ошибка подключения к базе данных");
-            e.printStackTrace();
+//            e.printStackTrace();
             System.exit(0);
         } catch (ClassNotFoundException e) {
             logger.severe("Отсутствует драйвер PostgreSQL");
@@ -96,6 +97,31 @@ public class DatabaseManager {
         return -1;
     }
 
+    private User getUserById(long id) {
+        Connection connection = connect();
+        try {
+            if (connection != null) {
+                PreparedStatement preparedStatement = connection.prepareStatement(QueryManager.GET_USER);
+                preparedStatement.setLong(1, id);
+                ResultSet resultSet = preparedStatement.executeQuery();
+                User user = null;
+                while (resultSet.next()) {
+                    user = new User(resultSet.getString(2), resultSet.getString(3));
+                    user.setId(resultSet.getLong(1));
+                    return user;
+                }
+            } else {
+                logger.severe("Подключение - null");
+                return null;
+            }
+            connection.close();
+        } catch (SQLException e) {
+            logger.severe("Ошибка выполнения запроса");
+            e.printStackTrace();
+            return null;
+        }
+        return null;
+    }
 
     public long addUser(User user) {
         Connection connection = connect();
@@ -394,7 +420,7 @@ public class DatabaseManager {
     }
 
     private Route parseRoute(ResultSet resultSet) throws SQLException {
-        return new Route(resultSet.getString(2),
+        Route route = new Route(resultSet.getString(2),
                 new Coordinates(
                         resultSet.getDouble(4),
                         resultSet.getInt(5)
@@ -411,6 +437,8 @@ public class DatabaseManager {
                         resultSet.getLong(12)
                 ),
                 resultSet.getDouble(13));
+        route.setUserHash(getUserById(resultSet.getLong(14)).hashCode());
+        return route;
     }
 
 

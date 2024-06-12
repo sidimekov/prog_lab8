@@ -38,8 +38,15 @@ public class ShowCommand extends Command {
             String response = RouteManager.returnCollection(collection);
             return new Response(response);
         } else {
-            TableModel model = new DefaultTableModel(rm.getTableData(), COLUMN_NAMES);
-            return new Response(model, ResponseStatus.OK);
+            switch (args[0]) {
+                case "table" -> {
+                    TableModel model = new DefaultTableModel(rm.getTableData(), COLUMN_NAMES);
+                    return new Response(model, ResponseStatus.OK);
+                }
+                default -> {
+                    return new Response(rm.getCollection(), ResponseStatus.OK);
+                }
+            }
         }
     }
 

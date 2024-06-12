@@ -51,7 +51,7 @@ public class MainPane {
             public void actionPerformed(ActionEvent e) {
                 int row = mainTable.getSelectedRow();
                 if (row == -1) {
-                    JOptionPane.showMessageDialog(guiManager.getFrame(), GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("removeErrorSelectFirst"));
+                    JOptionPane.showMessageDialog(guiManager.getMainFrame(), GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("removeErrorSelectFirst"));
                 } else {
                     Long id = (Long) mainTable.getModel().getValueAt(row, 0);
                     String name = (String) mainTable.getModel().getValueAt(row, 1);
@@ -59,7 +59,7 @@ public class MainPane {
                     String confirmMessage = GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("removeConfirm").replace("$name$", name);
                     String confirmTitle = guiManager.getResourceBundle().getString("removeById");
 
-                    int result = JOptionPane.showConfirmDialog(guiManager.getFrame(), confirmMessage, confirmTitle, JOptionPane.YES_NO_OPTION);
+                    int result = JOptionPane.showConfirmDialog(guiManager.getMainFrame(), confirmMessage, confirmTitle, JOptionPane.YES_NO_OPTION);
 
                     if (result == JOptionPane.YES_OPTION) {
 
@@ -67,11 +67,11 @@ public class MainPane {
                         switch (response.getStatus()) {
                             case OK -> {
                                 String removeOk = GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("removeOk").replace("$name$", name);
-                                JOptionPane.showMessageDialog(guiManager.getFrame(), removeOk);
+                                JOptionPane.showMessageDialog(guiManager.getMainFrame(), removeOk);
                                 updateTableData();
                             }
-                            case CLIENT_ERROR -> JOptionPane.showMessageDialog(guiManager.getFrame(), GuiManager.FONT_HTML_STRING + response.getMessage());
-                            case SERVER_ERROR -> JOptionPane.showMessageDialog(guiManager.getFrame(), GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("serverError"));
+                            case CLIENT_ERROR -> JOptionPane.showMessageDialog(guiManager.getMainFrame(), GuiManager.FONT_HTML_STRING + response.getMessage());
+                            case SERVER_ERROR -> JOptionPane.showMessageDialog(guiManager.getMainFrame(), GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("serverError"));
                         }
 
                     } else {
@@ -92,6 +92,12 @@ public class MainPane {
                 updateTableData();
             }
         });
+        visualizeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                guiManager.openVisualization();
+            }
+        });
     }
 
     public JPanel getMainPanel() {
@@ -99,7 +105,7 @@ public class MainPane {
     }
     public void updateTableData() {
 
-        Response response = CommandInvoker.getInstance().runCommand("show", ReadModes.APP);
+        Response response = CommandInvoker.getInstance().runCommand("show table", ReadModes.APP);
 
         switch (response.getStatus()) {
             case OK -> {

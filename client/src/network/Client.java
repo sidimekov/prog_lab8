@@ -1,7 +1,12 @@
 package network;
 
+import commandManagers.CommandInvoker;
+import entity.Route;
+import enums.ReadModes;
+
 import java.io.*;
 import java.net.*;
+import java.util.PriorityQueue;
 
 public class Client {
     private static Client client;
@@ -146,6 +151,15 @@ public class Client {
 
         return response;
 
+    }
+
+    public PriorityQueue<Route> getCollection() {
+        Response response = CommandInvoker.getInstance().runCommand("show collection", ReadModes.APP);
+        try {
+            return (PriorityQueue<Route>) response.getObject();
+        } catch (ClassCastException e) {
+            return null;
+        }
     }
 
     public User getUser() {

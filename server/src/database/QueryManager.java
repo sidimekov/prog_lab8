@@ -20,4 +20,5 @@ public class QueryManager {
     public static final String GET_OBJECT = "select * from routes where id = ?;";
     public static final String GET_OBJECTS = "select * from routes;";
     public static final String GET_USER_OBJECTS = "select * from routes where (user_id = ?);";
+    public static final String GET_USER = "select * from users where (id = ?);";
 }

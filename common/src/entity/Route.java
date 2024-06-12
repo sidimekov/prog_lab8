@@ -19,6 +19,8 @@ public class Route extends Entity implements Comparable {
     private LocationTo to; //Поле может быть null
     private double distance; //Значение поля должно быть больше 1
 
+    private int userHash;
+
 
     public Route(String name, Coordinates coordinates, LocationFrom from, LocationTo to, double distance) {
         this.id = IdManager.getId();
@@ -147,5 +149,13 @@ public class Route extends Entity implements Comparable {
         } else {
             return route1.getName().compareTo(route2.getName());
         }
+    }
+
+    public void setUserHash(int userHash) {
+        this.userHash = userHash;
+    }
+
+    public int getUserHash() {
+        return userHash;
     }
 }
