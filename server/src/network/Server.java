@@ -16,6 +16,7 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 
@@ -25,6 +26,8 @@ public class Server {
     private InetAddress clientAddr;
     private int clientPort;
     private static final Logger logger = Logger.getLogger("Server");
+    private String dbLogin;
+    private String dbPasswd;
 
     private Server() {
         server = this;
@@ -43,20 +46,24 @@ public class Server {
 
     public void run(int serverPort) {
 
+        Scanner credentials = null;
+        try {
+            credentials = new Scanner(new FileReader("credentials"));
+        } catch (FileNotFoundException e) {
+            logger.severe("Не найден файл для подключения к БД");
+            System.exit(0);
+        }
+
+        dbLogin = credentials.nextLine().trim();
+        dbPasswd= credentials.nextLine().trim();
+
+        if (dbLogin == null || dbPasswd == null) {
+            logger.severe("Не удалось считать логин и пароль для подключения к бд credentials");
+        }
+
         RouteManager.initialize();
 
-//        Scanner credentials = null;
-//        String login, passwd;
-//        try {
-//            credentials = new Scanner(new FileReader("credentials"));
-//        } catch (FileNotFoundException e) {
-//            logger.severe("Не найден файл для подключения к БД");
-//            System.exit(0);
-//        }
-//
-//        login = credentials.nextLine().trim();
-//        passwd = credentials.nextLine().trim();
-//
+
 //        String jdbcURL = "jdbc:postgresql://pg:5432/studs";
 
 
@@ -434,4 +441,11 @@ public class Server {
         return logger;
     }
 
+    public String getDbLogin() {
+        return dbLogin;
+    }
+
+    public String getDbPasswd() {
+        return dbPasswd;
+    }
 }

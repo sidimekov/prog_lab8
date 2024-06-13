@@ -3,7 +3,6 @@ package gui;
 import entity.Route;
 import gui.forms.*;
 import network.Client;
-import network.User;
 
 import javax.swing.*;
 import java.awt.*;

@@ -20,8 +20,7 @@ public class DatabaseManager {
     private Connection connect() {
         try {
             Class.forName("org.postgresql.Driver");
-            return DriverManager.getConnection("jdbc:postgresql://localhost:8005/studs", "s409553", "nWASInv7Uumwyf0P");
-//            return DriverManager.getConnection("jdbc:postgresql://pg:5432/studs", "s409553", "nWASInv7Uumwyf0P");
+            return DriverManager.getConnection("jdbc:postgresql://localhost:8005/studs", Server.getInstance().getDbLogin(), Server.getInstance().getDbPasswd());
         } catch (SQLException e) {
             logger.severe("Ошибка подключения к базе данных");
 //            e.printStackTrace();
