@@ -3,6 +3,7 @@
 ## туду
 - [ ] visualizacia objectov:
   - [x] draw objects
+  - [ ] animacia
   - [ ] click and drag to move the panel
   - [ ] roll to zoom the panel
 - [ ] filtres to table
