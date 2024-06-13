@@ -1,12 +1,12 @@
 # Лабораторная работа #8 про проге
 
 ## туду
-- visualizacia objectov:
-  - ~~draw objects~~
-  - click and drag to move the panel
-  - roll to zoom the panel
-- filtres to table
-- change the lang knopki
+- [ ] visualizacia objectov:
+  - [x] draw objects
+  - [ ] click and drag to move the panel
+  - [ ] roll to zoom the panel
+- [ ] filtres to table
+- [ ] change the lang knopki
 
 ## Задание
 
