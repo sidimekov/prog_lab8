@@ -6,7 +6,7 @@
   - click and drag to move the panel
   - roll to zoom the panel
 - filtres to table
-- change the lang
+- change the lang knopki
 
 ## Задание
 
