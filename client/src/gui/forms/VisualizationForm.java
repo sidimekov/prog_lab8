@@ -8,7 +8,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.PriorityQueue;
 
 public class VisualizationForm extends JFrame {
@@ -66,63 +69,50 @@ public class VisualizationForm extends JFrame {
 
         private int HEIGHT = VisualizationForm.HEIGHT;
         private int WIDTH = VisualizationForm.WIDTH;
-        private ArrayList<Line2D> routes;
+        private PriorityQueue<Route> routes;
         private Timer t;
-        private int delta;
+        private double delta;
         private Animator animator = new Animator();
 
         private VisualizationPanel() {
             super(new GridLayout());
 //            setBackground(new Color(190, 190, 190));
             setBounds(0, 0, VisualizationForm.WIDTH, VisualizationForm.HEIGHT);
-            t = new Timer(10, animator);
+            t = new Timer(5, animator);
             t.setCoalesce(false);
         }
 
-        private void loadRoutes() {
-            routes = new ArrayList<>();
-
-            for (Route route : client.getCollection()) {
-                
-            }
-        }
-
         private void animate() {
-
-
+            routes = client.getCollection();
 
             delta = 0;
             t.start();
         }
 
         @Override
-        public void paint(Graphics g) {
-            super.paint(g);
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+
             Graphics2D g2d = (Graphics2D) g;
 
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
 
-            for (Route route : client.getCollection()) {
+            for (Route route : routes) {
 
                 Color color = new Color(route.getUserHash());
-                g2d.setColor(color);
 
                 int routeSize = (int) Math.min(10 + (route.getDistance() / 100), 40);
                 int fromX = Math.min(WIDTH - routeSize * 2, route.getFrom().getX());
-//                int fromX = (int) route.getFrom().getX();
-//                int fromY = route.getFrom().getY();
                 int fromY = (int) ((HEIGHT - routeSize * 2) * ((double) route.getFrom().getY() / 1000));
                 int toX = (int) Math.min(WIDTH - routeSize * 2, route.getTo().getX());
-//                int toX = (int) route.getTo().getX();
-//                int toY = route.getTo().getY();
                 int toY = (int) ((HEIGHT - routeSize * 2) * ((double) route.getTo().getY() / 1000));
-//                System.out.printf("%s %s %s %s %s\n", fromX, fromY, toX, toY, routeSize);
-
-                toX = (int) (fromX + Math.abs(toX-fromX) * ((double) delta / 100));
-                toY = (int) (fromY + Math.abs(toY-fromY) * ((double) delta / 100));
+//
+                toX = (int) (fromX + Math.abs(toX-fromX) * ((double) delta / 50));
+                toY = (int) (fromY + Math.abs(toY-fromY) * ((double) delta / 50));
 
                 drawRoute(g2d, fromX, fromY, toX, toY, routeSize, color);
+
             }
         }
 
@@ -148,7 +138,7 @@ public class VisualizationForm extends JFrame {
         private class Animator implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (delta < 100) {
+                if (delta < 50) {
                     delta++;
                     visualizationPanel.repaint();
                 } else {
