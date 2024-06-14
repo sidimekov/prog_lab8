@@ -4,8 +4,9 @@
 - [ ] visualizacia objectov:
   - [x] draw objects
   - [x] animacia
-  - [ ] click and drag to move the panel
-  - [ ] roll to zoom the panel
+  - [x] click and drag to move the panel
+  - [x] roll to zoom the panel\
+  - [ ] info about object on cliack
 - [ ] filtres to table
 - [ ] change the lang knopki
 

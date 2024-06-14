@@ -5,8 +5,7 @@ import network.Client;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -73,6 +72,14 @@ public class VisualizationForm extends JFrame {
         private Timer t;
         private double delta;
         private Animator animator = new Animator();
+        private int mouseX, mouseY;
+        private int offsetX = 0, offsetY = 0;
+        private int dragStartX, dragStartY;
+        private static final double SCALE_FACTOR = 1.1;
+        private static final double MAX_SCALE = 2.0;
+        private static final double MIN_SCALE = 0.5;
+        private double scale = 1.0;
+        private Point focusPoint = new Point();
 
         private VisualizationPanel() {
             super(new GridLayout());
@@ -80,6 +87,7 @@ public class VisualizationForm extends JFrame {
             setBounds(0, 0, VisualizationForm.WIDTH, VisualizationForm.HEIGHT);
             t = new Timer(5, animator);
             t.setCoalesce(false);
+            addMouseListeners();
         }
 
         private void animate() {
@@ -98,6 +106,9 @@ public class VisualizationForm extends JFrame {
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
 
+            g2d.translate(offsetX, offsetY);
+            g2d.scale(scale, scale);
+
             for (Route route : routes) {
 
                 Color color = new Color(route.getUserHash());
@@ -108,8 +119,8 @@ public class VisualizationForm extends JFrame {
                 int toX = (int) Math.min(WIDTH - routeSize * 2, route.getTo().getX());
                 int toY = (int) ((HEIGHT - routeSize * 2) * ((double) route.getTo().getY() / 1000));
 //
-                toX = (int) (fromX + Math.abs(toX-fromX) * ((double) delta / 50));
-                toY = (int) (fromY + Math.abs(toY-fromY) * ((double) delta / 50));
+                toX = (int) (fromX + Math.abs(toX-fromX) * (delta / 50));
+                toY = (int) (fromY + Math.abs(toY-fromY) * (delta / 50));
 
                 drawRoute(g2d, fromX, fromY, toX, toY, routeSize, color);
 
@@ -126,6 +137,7 @@ public class VisualizationForm extends JFrame {
             g2d.setStroke(new BasicStroke(Math.round(size * 0.4)));
             g2d.setColor(color.darker());
             g2d.drawLine(x1, y1, x2, y2);
+
             g2d.setColor(color);
             g2d.fillOval(x1 - size, y1 - size, size * 2, size * 2);
             g2d.fillOval(x2 - size, y2 - size, size * 2, size * 2);
@@ -145,6 +157,47 @@ public class VisualizationForm extends JFrame {
                     t.stop();
                 }
             }
+        }
+        private void addMouseListeners() {
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    dragStartX = e.getX() - offsetX;
+                    dragStartY = e.getY() - offsetY;
+                }
+            });
+
+            addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
+                public void mouseDragged(MouseEvent e) {
+                    offsetX = e.getX() - dragStartX;
+                    offsetY = e.getY() - dragStartY;
+                    focusPoint = e.getPoint();
+                    repaint();
+                }
+            });
+            addMouseWheelListener(new MouseWheelListener() {
+                @Override
+                public void mouseWheelMoved(MouseWheelEvent e) {
+                    int notches = e.getWheelRotation();
+                    double prevScale = scale;
+                    if (notches < 0) {
+                        scale *= SCALE_FACTOR;
+                    } else {
+                        scale /= SCALE_FACTOR;
+                    }
+                    if (scale > MAX_SCALE) {
+                        scale = MAX_SCALE;
+                    } else if (scale < MIN_SCALE) {
+                        scale = MIN_SCALE;
+                    }
+                    focusPoint.setLocation(
+                            (int) (focusPoint.x * (scale / prevScale)),
+                            (int) (focusPoint.y * (scale / prevScale))
+                    );
+                    visualizationPanel.repaint();
+                }
+            });
         }
     }
 
