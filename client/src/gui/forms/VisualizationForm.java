@@ -4,10 +4,13 @@ import entity.Route;
 import network.Client;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
+import java.awt.geom.Path2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,8 +26,11 @@ public class VisualizationForm extends JFrame {
     private JPanel mainPanel;
     private JPanel errorMessagePanel;
     private JLabel errorLabel;
-    private JScrollPane visualizationScroll;
     private JPanel visualizationPanel;
+    private JPanel fullVisualPanel;
+    private JSlider zoomSlider;
+    private JLabel visualuzationLabel;
+    private JPanel visualHeaderPanel;
 
     public VisualizationForm() {
 //        setSize(WIDTH, HEIGHT);
@@ -69,10 +75,9 @@ public class VisualizationForm extends JFrame {
         private int HEIGHT = VisualizationForm.HEIGHT;
         private int WIDTH = VisualizationForm.WIDTH;
         private PriorityQueue<Route> routes;
-        private Timer t;
+        private HashMap<Long, Line2D> interactLines = new HashMap<>();
+        private final Timer t;
         private double delta;
-        private Animator animator = new Animator();
-        private int mouseX, mouseY;
         private int offsetX = 0, offsetY = 0;
         private int dragStartX, dragStartY;
         private static final double SCALE_FACTOR = 1.1;
@@ -80,14 +85,20 @@ public class VisualizationForm extends JFrame {
         private static final double MIN_SCALE = 0.5;
         private double scale = 1.0;
         private Point focusPoint = new Point();
+        private Line2D hoveredLine, clickedLine;
 
         private VisualizationPanel() {
-            super(new GridLayout());
+            super(null);
 //            setBackground(new Color(190, 190, 190));
             setBounds(0, 0, VisualizationForm.WIDTH, VisualizationForm.HEIGHT);
-            t = new Timer(5, animator);
+
+            zoomSlider = new JSlider(0, 100, 50);
+
+            t = new Timer(5, new Animator());
             t.setCoalesce(false);
-            addMouseListeners();
+            addListeners();
+
+            System.out.println(1);
         }
 
         private void animate() {
@@ -112,29 +123,46 @@ public class VisualizationForm extends JFrame {
             for (Route route : routes) {
 
                 Color color = new Color(route.getUserHash());
+                if (interactLines.get(route.getId()) == hoveredLine) {
+                    color = color.brighter();
+                }
 
                 int routeSize = (int) Math.min(10 + (route.getDistance() / 100), 40);
                 int fromX = Math.min(WIDTH - routeSize * 2, route.getFrom().getX());
                 int fromY = (int) ((HEIGHT - routeSize * 2) * ((double) route.getFrom().getY() / 1000));
                 int toX = (int) Math.min(WIDTH - routeSize * 2, route.getTo().getX());
                 int toY = (int) ((HEIGHT - routeSize * 2) * ((double) route.getTo().getY() / 1000));
-//
-                toX = (int) (fromX + Math.abs(toX-fromX) * (delta / 50));
-                toY = (int) (fromY + Math.abs(toY-fromY) * (delta / 50));
+
+                int transformedFromX = (int) ((fromX + offsetX) * scale);
+                int transformedFromY = (int) ((fromY + offsetY) * scale);
+                int transformedToX = (int) ((toX + offsetX) * scale);
+                int transformedToY = (int) ((toY + offsetY) * scale);
+
+                interactLines.put(route.getId(), new Line2D.Double(transformedFromX, transformedFromY, transformedToX, transformedToY));
+
+                toX = (int) (fromX + (toX - fromX) * (delta / 50));
+                toY = (int) (fromY + (toY - fromY) * (delta / 50));
+
 
                 drawRoute(g2d, fromX, fromY, toX, toY, routeSize, color);
+                g2d.drawString(String.valueOf(route.getId()), fromX + 20, fromY + 20);
 
             }
+
+//            g2d.setColor(Color.GREEN);
+//            for (Line2D interactLine : interactLines.values()) {
+//                g2d.draw(interactLine);
+//            }
         }
 
         private void drawRoute(Graphics2D g2d, int x1, int y1, int x2, int y2, int size, Color color) {
-
             g2d.setColor(color);
 
-
-            g2d.setStroke(new BasicStroke(Math.round(size * 0.8)));
+            float strokeWidth = Math.round(size * 0.8f);
+            g2d.setStroke(new BasicStroke(strokeWidth));
             g2d.drawLine(x1, y1, x2, y2);
-            g2d.setStroke(new BasicStroke(Math.round(size * 0.4)));
+
+            g2d.setStroke(new BasicStroke(Math.round(size * 0.4f)));
             g2d.setColor(color.darker());
             g2d.drawLine(x1, y1, x2, y2);
 
@@ -144,8 +172,8 @@ public class VisualizationForm extends JFrame {
             g2d.setColor(color.darker());
             g2d.fillOval((int) (x1 - Math.round(size * 0.75)), (int) (y1 - Math.round(size * 0.75)), (int) (1.5 * size), (int) (1.5 * size));
             g2d.fillOval((int) (x2 - Math.round(size * 0.75)), (int) (y2 - Math.round(size * 0.75)), (int) (1.5 * size), (int) (1.5 * size));
-
         }
+
 
         private class Animator implements ActionListener {
             @Override
@@ -158,12 +186,21 @@ public class VisualizationForm extends JFrame {
                 }
             }
         }
-        private void addMouseListeners() {
+
+        private void addListeners() {
             addMouseListener(new MouseAdapter() {
                 @Override
                 public void mousePressed(MouseEvent e) {
                     dragStartX = e.getX() - offsetX;
                     dragStartY = e.getY() - offsetY;
+                    clickedLine = getLineUnderMouse(e.getPoint());
+                    repaint();
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    clickedLine = null;
+                    repaint();
                 }
             });
 
@@ -175,7 +212,14 @@ public class VisualizationForm extends JFrame {
                     focusPoint = e.getPoint();
                     repaint();
                 }
+
+                @Override
+                public void mouseMoved(MouseEvent e) {
+                    hoveredLine = getLineUnderMouse(e.getPoint());
+                    repaint();
+                }
             });
+
             addMouseWheelListener(new MouseWheelListener() {
                 @Override
                 public void mouseWheelMoved(MouseWheelEvent e) {
@@ -195,9 +239,35 @@ public class VisualizationForm extends JFrame {
                             (int) (focusPoint.x * (scale / prevScale)),
                             (int) (focusPoint.y * (scale / prevScale))
                     );
+                    zoomSlider.setValue((int) (((scale - 0.5) / 1.5) * 100));
                     visualizationPanel.repaint();
                 }
             });
+
+            zoomSlider.addChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    JSlider src = (JSlider) e.getSource();
+                    int value = src.getValue();
+                    scale = 0.5 + 1.5 * (double) value / 100;
+                    repaint();
+                }
+            });
+        }
+
+
+        private Line2D getLineUnderMouse(Point point) {
+            double tolerance = 10.0; // Пороговое значение для определения, что курсор находится на линии
+            for (Map.Entry<Long, Line2D> entry : interactLines.entrySet()) {
+                Line2D line = entry.getValue();
+                double lineWidth = 10; // Предположим, что ширина линии 10. Подставьте реальное значение ширины
+                if (line.ptSegDist(point) <= tolerance + lineWidth / 2.0) {
+                    return line;
+                }
+//                System.out.println(entry.getKey() + " " + line.ptSegDist(point));
+            }
+//            System.out.println();
+            return null;
         }
     }
 
