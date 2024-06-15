@@ -53,10 +53,8 @@ public class LocationFrom extends Entity {
 
     @Override
     public String toString() {
-        return "LocationFrom{" +
-                "x=" + x +
-                ", y=" + y +
-                ", z=" + z +
-                '}';
+        return "x=" + x +
+                "\n\ty=" + y +
+                "\n\tz=" + z;
     }
 }

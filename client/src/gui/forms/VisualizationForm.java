@@ -1,6 +1,7 @@
 package gui.forms;
 
 import entity.Route;
+import gui.GuiManager;
 import network.Client;
 
 import javax.swing.*;
@@ -86,6 +87,9 @@ public class VisualizationForm extends JFrame {
         private double scale = 1.0;
         private Point focusPoint = new Point();
         private Line2D hoveredLine, clickedLine;
+        private JPopupMenu popupMenu;
+
+        private JLabel popupLabel;
 
         private VisualizationPanel() {
             super(null);
@@ -97,8 +101,13 @@ public class VisualizationForm extends JFrame {
             t = new Timer(5, new Animator());
             t.setCoalesce(false);
             addListeners();
+            initPopupMenu();
+        }
 
-            System.out.println(1);
+        private void initPopupMenu() {
+            popupMenu = new JPopupMenu();
+            popupLabel = new JLabel();
+            popupMenu.add(popupLabel);
         }
 
         private void animate() {
@@ -119,6 +128,7 @@ public class VisualizationForm extends JFrame {
 
             g2d.translate(offsetX, offsetY);
             g2d.scale(scale, scale);
+            g2d.setFont(GuiManager.getInstance().getDefaultFont());
 
             for (Route route : routes) {
 
@@ -133,10 +143,10 @@ public class VisualizationForm extends JFrame {
                 int toX = (int) Math.min(WIDTH - routeSize * 2, route.getTo().getX());
                 int toY = (int) ((HEIGHT - routeSize * 2) * ((double) route.getTo().getY() / 1000));
 
-                int transformedFromX = (int) ((fromX + offsetX) * scale);
-                int transformedFromY = (int) ((fromY + offsetY) * scale);
-                int transformedToX = (int) ((toX + offsetX) * scale);
-                int transformedToY = (int) ((toY + offsetY) * scale);
+                int transformedFromX = (int) (fromX * scale + offsetX);
+                int transformedFromY = (int) (fromY * scale + offsetY);
+                int transformedToX = (int) (toX * scale + offsetX);
+                int transformedToY = (int) (toY * scale + offsetY);
 
                 interactLines.put(route.getId(), new Line2D.Double(transformedFromX, transformedFromY, transformedToX, transformedToY));
 
@@ -145,7 +155,8 @@ public class VisualizationForm extends JFrame {
 
 
                 drawRoute(g2d, fromX, fromY, toX, toY, routeSize, color);
-                g2d.drawString(String.valueOf(route.getId()), fromX + 20, fromY + 20);
+                g2d.setColor(Color.BLACK);
+                g2d.drawString(String.valueOf(route.getName()), fromX + routeSize, fromY);
 
             }
 
@@ -194,6 +205,30 @@ public class VisualizationForm extends JFrame {
                     dragStartX = e.getX() - offsetX;
                     dragStartY = e.getY() - offsetY;
                     clickedLine = getLineUnderMouse(e.getPoint());
+
+                    if (clickedLine != null) {
+                        Route route = null;
+                        for (Map.Entry<Long, Line2D> entry : interactLines.entrySet()) {
+                            if (entry.getValue() == clickedLine) {
+                                long id = entry.getKey();
+                                for (Route curRoute : routes) {
+                                    if (curRoute.getId() == id) {
+                                        route = curRoute;
+                                    }
+                                }
+                            }
+                        }
+                        if (route != null) {
+                            popupLabel.setText(GuiManager.FONT_HTML_STRING + GuiManager.getInstance().getResourceBundle().getString("routeInfo").replace("$route$", route.toString()).replace("\n", "<br>"));
+                            popupMenu.show(VisualizationPanel.this, e.getX(), e.getY());
+                        } else {
+                            popupLabel.setText(GuiManager.FONT_HTML_STRING + GuiManager.getInstance().getResourceBundle().getString("noRouteInfo"));
+                            popupMenu.show(VisualizationPanel.this, e.getX(), e.getY());
+                        }
+                    } else {
+                        popupMenu.setVisible(false);
+                    }
+
                     repaint();
                 }
 

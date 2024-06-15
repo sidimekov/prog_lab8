@@ -126,15 +126,13 @@ public class Route extends Entity implements Comparable {
 
     @Override
     public String toString() {
-        return "Route{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", coordinates=" + coordinates +
-                ", creationDate=" + creationDate +
-                ", from=" + from +
-                ", to=" + to +
-                ", distance=" + distance +
-                '}';
+        return "id=" + id +
+                "\nname='" + name + '\'' +
+                "\ncoordinates=" + coordinates +
+                "\ncreationDate=" + creationDate +
+                "\nfrom=" + from +
+                "\nto=" + to +
+                "\ndistance=" + distance;
     }
 
     @Override

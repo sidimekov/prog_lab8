@@ -40,9 +40,7 @@ public class Coordinates extends Entity {
 
     @Override
     public String toString() {
-        return "Coordinates{" +
-                "x=" + x +
-                ", y=" + y +
-                '}';
+        return "\n\tx=" + x +
+                "\n\ty=" + y;
     }
 }

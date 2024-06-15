@@ -66,11 +66,9 @@ public class LocationTo extends Entity {
 
     @Override
     public String toString() {
-        return "LocationTo{" +
-                "x=" + x +
-                ", y=" + y +
-                ", z=" + z +
-                ", name='" + name + '\'' +
-                '}';
+        return "x=" + x +
+                "\n\ty=" + y +
+                "\n\tz=" + z +
+                "\n\tname='" + name + '\'';
     }
 }
