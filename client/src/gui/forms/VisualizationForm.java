@@ -138,10 +138,10 @@ public class VisualizationForm extends JFrame {
                 }
 
                 int routeSize = (int) Math.min(10 + (route.getDistance() / 100), 40);
-                int fromX = Math.min(WIDTH - routeSize * 2, route.getFrom().getX());
-                int fromY = (int) ((HEIGHT - routeSize * 2) * ((double) route.getFrom().getY() / 1000));
-                int toX = (int) Math.min(WIDTH - routeSize * 2, route.getTo().getX());
-                int toY = (int) ((HEIGHT - routeSize * 2) * ((double) route.getTo().getY() / 1000));
+                int fromX = route.getFrom().getX();
+                int fromY = (int) ((-1.0) * ((double) route.getFrom().getY()));
+                int toX = (int) route.getTo().getX();
+                int toY = (int) ((-1.0) * (double) route.getTo().getY());
 
                 int transformedFromX = (int) (fromX * scale + offsetX);
                 int transformedFromY = (int) (fromY * scale + offsetY);
@@ -159,11 +159,6 @@ public class VisualizationForm extends JFrame {
                 g2d.drawString(String.valueOf(route.getName()), fromX + routeSize, fromY);
 
             }
-
-//            g2d.setColor(Color.GREEN);
-//            for (Line2D interactLine : interactLines.values()) {
-//                g2d.draw(interactLine);
-//            }
         }
 
         private void drawRoute(Graphics2D g2d, int x1, int y1, int x2, int y2, int size, Color color) {
@@ -250,8 +245,11 @@ public class VisualizationForm extends JFrame {
 
                 @Override
                 public void mouseMoved(MouseEvent e) {
+                    Line2D prevLine = hoveredLine;
                     hoveredLine = getLineUnderMouse(e.getPoint());
-                    repaint();
+                    if (prevLine != hoveredLine) {
+                        repaint();
+                    }
                 }
             });
 
@@ -292,16 +290,14 @@ public class VisualizationForm extends JFrame {
 
 
         private Line2D getLineUnderMouse(Point point) {
-            double tolerance = 10.0; // Пороговое значение для определения, что курсор находится на линии
+            double tolerance = 10.0;
             for (Map.Entry<Long, Line2D> entry : interactLines.entrySet()) {
                 Line2D line = entry.getValue();
-                double lineWidth = 10; // Предположим, что ширина линии 10. Подставьте реальное значение ширины
+                double lineWidth = 10;
                 if (line.ptSegDist(point) <= tolerance + lineWidth / 2.0) {
                     return line;
                 }
-//                System.out.println(entry.getKey() + " " + line.ptSegDist(point));
             }
-//            System.out.println();
             return null;
         }
     }

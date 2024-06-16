@@ -6,7 +6,9 @@ import network.Client;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.List;
 
@@ -36,7 +38,7 @@ public class GuiManager {
         if (instance == null) {
             instance = new GuiManager(new MainFrame(), new VisualizationForm());
         }
-        instance.updateLocale(null);
+        instance.updateLocale(Locale.of("ru","RU"));
         return instance;
     }
 
@@ -93,6 +95,10 @@ public class GuiManager {
         visualizationForm.setVisible(true);
     }
 
+    public void closeVisualization() {
+        visualizationForm.dispatchEvent(new WindowEvent(visualizationForm, WindowEvent.WINDOW_CLOSING));
+    }
+
     public MainPane getMainPanel() {
         return mainPanel;
     }
@@ -100,7 +106,7 @@ public class GuiManager {
     public void openAddDialog() {
         AddDialog addDialog = new AddDialog(mainFrame);
 
-        addDialog.setPreferredSize(new Dimension(800, 500));
+        addDialog.setPreferredSize(new Dimension(1000, 500));
         addDialog.pack();
         addDialog.setLocationRelativeTo(null);
 
@@ -114,6 +120,15 @@ public class GuiManager {
         otherCommandsDialog.setLocationRelativeTo(null);
 
         otherCommandsDialog.setVisible(true);
+    }
+    public void openLanguageDialog(Frame frame) {
+        LanguageDialog languageDialog = new LanguageDialog(frame);
+
+        languageDialog.setPreferredSize(new Dimension(500, 200));
+        languageDialog.pack();
+        languageDialog.setLocationRelativeTo(null);
+
+        languageDialog.setVisible(true);
     }
 
     public File chooseFile() {
@@ -175,6 +190,7 @@ public class GuiManager {
         ResourceBundle.clearCache();
         if (locale != null) {
             resourceBundle = ResourceBundle.getBundle("resources.gui", locale);
+            System.out.println(locale);
         } else {
             // получить английский дефолтный из gui.properties
             resourceBundle = ResourceBundle.getBundle("resources.gui",

@@ -59,6 +59,9 @@ public class Response implements Serializable {
         return "Response{" +
                 "message='" + message + '\'' +
                 ", responseRequest=" + responseRequest +
+                ", responseStatus=" + responseStatus +
+                ", user=" + user +
+                ", object=" + object +
                 '}';
     }
 

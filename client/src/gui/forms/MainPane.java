@@ -27,6 +27,7 @@ public class MainPane {
     private JScrollPane tablePanel;
     private JButton logoutButton;
     private JButton refreshButton;
+    private JButton languageButton;
 
     public MainPane() {
         addButton.addActionListener(new ActionListener() {
@@ -42,6 +43,7 @@ public class MainPane {
                 switch (response.getStatus()) {
                     case OK -> {
                         guiManager.openSignInPanel();
+                        guiManager.closeVisualization();
                     }
                 }
             }
@@ -98,6 +100,17 @@ public class MainPane {
                 guiManager.openVisualization();
             }
         });
+        languageButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                guiManager.openLanguageDialog(guiManager.getMainFrame());
+            }
+        });
+        if (languageButton != null) {
+            languageButton.setOpaque(false);
+            languageButton.setContentAreaFilled(false);
+            languageButton.setBorderPainted(false);
+        }
     }
 
     public JPanel getMainPanel() {
@@ -136,4 +149,5 @@ public class MainPane {
     public void updateUserLabel(String login) {
         username.setText(login);
     }
+
 }
