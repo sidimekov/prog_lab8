@@ -119,6 +119,16 @@ public class GuiManager {
 
         otherCommandsDialog.setVisible(true);
     }
+
+    public void openFilterDialog() {
+        FilterDialog filterDialog = new FilterDialog(mainFrame);
+
+        filterDialog.setPreferredSize(new Dimension(600, 600));
+        filterDialog.pack();
+        filterDialog.setLocationRelativeTo(null);
+
+        filterDialog.setVisible(true);
+    }
     public void openLanguageDialog(Frame frame) {
         LanguageDialog languageDialog = new LanguageDialog(frame);
 

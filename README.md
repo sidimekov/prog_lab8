@@ -7,7 +7,7 @@
   - [x] click and drag to move the panel
   - [x] roll to zoom the panel\
   - [x] info about object on cliack
-- [ ] filtres to table
+- [x] filtres to table
 - [x] change the lang knopki
 - [ ] edit objects
 - [ ] sync with server

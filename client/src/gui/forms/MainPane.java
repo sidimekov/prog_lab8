@@ -12,6 +12,8 @@ import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Map;
 
 public class MainPane  {
     private GuiManager guiManager = GuiManager.getInstance();
@@ -29,6 +31,8 @@ public class MainPane  {
     private JButton logoutButton;
     private JButton refreshButton;
     private JButton languageButton;
+    private JButton filterButton;
+    private TableRowSorter<TableModel> rowSorter;
 
     public MainPane() {
         addButton.addActionListener(new ActionListener() {
@@ -112,6 +116,12 @@ public class MainPane  {
             languageButton.setContentAreaFilled(false);
             languageButton.setBorderPainted(false);
         }
+        filterButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                guiManager.openFilterDialog();
+            }
+        });
     }
 
     public JPanel getMainPanel() {
@@ -132,7 +142,7 @@ public class MainPane  {
                     break;
                 }
 
-                TableRowSorter<TableModel> rowSorter = new TableRowSorter<>(tableModel);
+                rowSorter = new TableRowSorter<>(tableModel);
                 mainTable.setRowSorter(rowSorter);
                 mainTable.setModel(tableModel);
             }
@@ -146,6 +156,50 @@ public class MainPane  {
             }
         }
     }
+    public void applyFilter(Map<String, String> filterValues) {
+        ArrayList<RowFilter<Object, Object>> filters = new ArrayList<>(12);
+        try {
+            if (!filterValues.get("id").isEmpty()) {
+                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("id"), 0));
+            }
+            if (!filterValues.get("routeName").isEmpty()) {
+                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("routeName"), 1));
+            }
+            if (!filterValues.get("coordinatesX").isEmpty()) {
+                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("coordinatesX"), 2));
+            }
+            if (!filterValues.get("coordinatesY").isEmpty()) {
+                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("coordinatesY"), 3));
+            }
+            if (!filterValues.get("fromX").isEmpty()) {
+                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("fromX"), 4));
+            }
+            if (!filterValues.get("fromY").isEmpty()) {
+                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("fromY"), 5));
+            }
+            if (!filterValues.get("fromZ").isEmpty()) {
+                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("fromZ"), 6));
+            }
+            if (!filterValues.get("toName").isEmpty()) {
+                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("toName"), 7));
+            }
+            if (!filterValues.get("toX").isEmpty()) {
+                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("toX"), 8));
+            }
+            if (!filterValues.get("toY").isEmpty()) {
+                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("toY"), 9));
+            }
+            if (!filterValues.get("toZ").isEmpty()) {
+                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("toZ"), 10));
+            }
+            if (!filterValues.get("distance").isEmpty()) {
+                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("distance"), 11));
+            }
+        } catch (java.util.regex.PatternSyntaxException e) {
+            return;
+        }
+        rowSorter.setRowFilter(RowFilter.andFilter(filters));
+    }
 
     public void updateLanguage() {
         mainHeader.setText(LocalizationManager.getString("mainHeader"));
@@ -155,6 +209,7 @@ public class MainPane  {
         removeButton.setText(LocalizationManager.getString("removeButton"));
         otherButton.setText(LocalizationManager.getString("otherButton"));
         visualizeButton.setText(LocalizationManager.getString("visualizeButton"));
+        filterButton.setText(LocalizationManager.getString("filter"));
     }
     public void updateUserLabel(String login) {
         username.setText(login);
