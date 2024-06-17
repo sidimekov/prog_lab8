@@ -15,7 +15,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Map;
 
-public class MainPane  {
+public class MainPane {
     private GuiManager guiManager = GuiManager.getInstance();
     private JPanel mainPanel;
     private JTable mainTable;
@@ -77,8 +77,10 @@ public class MainPane  {
                                 JOptionPane.showMessageDialog(guiManager.getMainFrame(), removeOk);
                                 updateTableData();
                             }
-                            case CLIENT_ERROR -> JOptionPane.showMessageDialog(guiManager.getMainFrame(), GuiManager.FONT_HTML_STRING + response.getMessage());
-                            case SERVER_ERROR -> JOptionPane.showMessageDialog(guiManager.getMainFrame(), GuiManager.FONT_HTML_STRING + LocalizationManager.getString("serverError"));
+                            case CLIENT_ERROR ->
+                                    JOptionPane.showMessageDialog(guiManager.getMainFrame(), GuiManager.FONT_HTML_STRING + response.getMessage());
+                            case SERVER_ERROR ->
+                                    JOptionPane.showMessageDialog(guiManager.getMainFrame(), GuiManager.FONT_HTML_STRING + LocalizationManager.getString("serverError"));
                         }
 
                     } else {
@@ -127,6 +129,7 @@ public class MainPane  {
     public JPanel getMainPanel() {
         return mainPanel;
     }
+
     public void updateTableData() {
 
         Response response = CommandInvoker.getInstance().runCommand("show table", ReadModes.APP);
@@ -156,49 +159,70 @@ public class MainPane  {
             }
         }
     }
+
     public void applyFilter(Map<String, String> filterValues) {
         ArrayList<RowFilter<Object, Object>> filters = new ArrayList<>(12);
         try {
             if (!filterValues.get("id").isEmpty()) {
-                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("id"), 0));
+                filters.add(createNumberFilter(filterValues.get("id"), 0));
             }
             if (!filterValues.get("routeName").isEmpty()) {
                 filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("routeName"), 1));
             }
             if (!filterValues.get("coordinatesX").isEmpty()) {
-                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("coordinatesX"), 2));
+                filters.add(createNumberFilter(filterValues.get("coordinatesX"), 3));
             }
             if (!filterValues.get("coordinatesY").isEmpty()) {
-                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("coordinatesY"), 3));
+                filters.add(createNumberFilter(filterValues.get("coordinatesY"), 4));
             }
             if (!filterValues.get("fromX").isEmpty()) {
-                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("fromX"), 4));
+                filters.add(createNumberFilter(filterValues.get("fromX"), 5));
             }
             if (!filterValues.get("fromY").isEmpty()) {
-                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("fromY"), 5));
+                filters.add(createNumberFilter(filterValues.get("fromY"), 6));
             }
             if (!filterValues.get("fromZ").isEmpty()) {
-                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("fromZ"), 6));
+                filters.add(createNumberFilter(filterValues.get("fromZ"), 7));
             }
             if (!filterValues.get("toName").isEmpty()) {
-                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("toName"), 7));
+                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("toName"), 8));
             }
             if (!filterValues.get("toX").isEmpty()) {
-                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("toX"), 8));
+                filters.add(createNumberFilter(filterValues.get("toX"), 9));
             }
             if (!filterValues.get("toY").isEmpty()) {
-                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("toY"), 9));
+                filters.add(createNumberFilter(filterValues.get("toY"), 10));
             }
             if (!filterValues.get("toZ").isEmpty()) {
-                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("toZ"), 10));
+                filters.add(createNumberFilter(filterValues.get("toZ"), 11));
             }
             if (!filterValues.get("distance").isEmpty()) {
-                filters.add(RowFilter.regexFilter("(?i)" + filterValues.get("distance"), 11));
+                filters.add(createNumberFilter(filterValues.get("distance"), 12));
             }
         } catch (java.util.regex.PatternSyntaxException e) {
             return;
         }
         rowSorter.setRowFilter(RowFilter.andFilter(filters));
+
+    }
+
+    private RowFilter<Object, Object> createNumberFilter(String filterText, int columnIndex) {
+        String operator = filterText.substring(0, 1);
+        double value;
+        try {
+            value = Double.parseDouble(filterText.substring(1));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+
+        switch (operator) {
+            case "<":
+                return RowFilter.numberFilter(RowFilter.ComparisonType.BEFORE, value, columnIndex);
+            case ">":
+                return RowFilter.numberFilter(RowFilter.ComparisonType.AFTER, value, columnIndex);
+            default:
+                return RowFilter.regexFilter("(?i)" + filterText, columnIndex);
+        }
     }
 
     public void updateLanguage() {
@@ -211,6 +235,7 @@ public class MainPane  {
         visualizeButton.setText(LocalizationManager.getString("visualizeButton"));
         filterButton.setText(LocalizationManager.getString("filter"));
     }
+
     public void updateUserLabel(String login) {
         username.setText(login);
     }

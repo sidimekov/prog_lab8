@@ -9,7 +9,6 @@
   - [x] info about object on cliack
 - [x] filtres to table
 - [x] change the lang knopki
-- [ ] edit objects
 - [ ] sync with server
 
 ## Задание
