@@ -1,5 +1,6 @@
 package gui.forms;
 
+import network.Client;
 import util.CommandInvoker;
 import enums.ReadModes;
 import gui.GuiManager;
@@ -93,6 +94,7 @@ public class MainPane {
             @Override
             public void actionPerformed(ActionEvent e) {
                 guiManager.openOtherCommandsDialog();
+                System.out.println(Client.getInstance().checkForUpdates());
             }
         });
         refreshButton.addActionListener(new ActionListener() {
@@ -148,6 +150,8 @@ public class MainPane {
                 rowSorter = new TableRowSorter<>(tableModel);
                 mainTable.setRowSorter(rowSorter);
                 mainTable.setModel(tableModel);
+
+                Client.getInstance().updateLast();
             }
             case CLIENT_ERROR -> {
                 mainHeader.setForeground(Color.RED);

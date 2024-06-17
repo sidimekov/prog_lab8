@@ -7,16 +7,14 @@ import commandManagers.commands.*;
 import entity.Route;
 import enums.ReadModes;
 import enums.RequestTypes;
+import enums.ResponseStatus;
 import multithreading.RequestProcessManager;
 import multithreading.ThreadManager;
 import util.InputManager;
 
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 
@@ -228,11 +226,25 @@ public class Server {
         Response response = null;
 
         try {
-            if (request.getType() == RequestTypes.COMMAND) {
-                if (fileContent == null) {
-                    response = handleRequest((CommandRequest) request);
-                } else {
-                    response = handleRequest((CommandRequest) request, fileContent);
+            switch (request.getType()) {
+                case COMMAND -> {
+                    if (fileContent == null) {
+                        response = handleRequest((CommandRequest) request);
+                    } else {
+                        response = handleRequest((CommandRequest) request, fileContent);
+                    }
+                }
+                case UPDATE -> {
+                    UpdateRequest updateRequest = (UpdateRequest) request;
+                    Date clientUpdate = updateRequest.getCurrentLastUpdate();
+                    Date serverUpdate = RouteManager.getInstance().getLastUpdate();
+                    if (clientUpdate == null) {
+                        response = new Response(serverUpdate, ResponseStatus.CLIENT_ERROR);
+                    } else if (serverUpdate.compareTo(clientUpdate) > 0) {
+                        response = new Response(serverUpdate, ResponseStatus.CLIENT_ERROR);
+                    } else {
+                        response = new Response(serverUpdate, ResponseStatus.OK);
+                    }
                 }
             }
         } catch (NullPointerException e) {

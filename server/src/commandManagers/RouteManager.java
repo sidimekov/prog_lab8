@@ -26,6 +26,7 @@ public class RouteManager {
     private static Date initializationDate;
     private static final Logger logger = Server.getLogger();
     private final DatabaseManager dbManager = new DatabaseManager();
+    private Date lastUpdate;
 
     private RouteManager() {
         collection = new PriorityQueue<>();
@@ -42,6 +43,7 @@ public class RouteManager {
         if (instance == null) {
             instance = new RouteManager();
             initializationDate = new Date();
+            instance.lastUpdate = new Date();
             instance.loadCollection();
         }
     }
@@ -63,6 +65,7 @@ public class RouteManager {
             if (checkIdUniqueness()) {
                 if (collection.stream().allMatch(RouteManager::validateElement)) {
                     this.collection = collection;
+                    instance.lastUpdate = new Date();
                     logger.info("Коллекция была загружена из файла");
                 } else {
                     logger.severe("Ошибка при загрузке из файла: Некоторые элементы из коллекции некорректны");
@@ -108,6 +111,7 @@ public class RouteManager {
             if (id != -1) {
                 el.setId(id);
                 el.setColorFromUser(dbManager.getUserById(userId));
+                lastUpdate = new Date();
                 collection.add(el);
             } else {
                 logger.severe("Ошибка с бд при добавлении элемента");
@@ -118,6 +122,7 @@ public class RouteManager {
                 el.setId(id);
                 el.setColorFromUser(dbManager.getUserById(userId));
                 if (id != -1) {
+                    lastUpdate = new Date();
                     collection.add(el);
                 } else {
                     logger.severe("Ошибка с бд при добавлении элемента");
@@ -158,6 +163,7 @@ public class RouteManager {
                 localRemove(id);
                 Route newElement = dbManager.getRoute(id);
                 newElement.setId(updated);
+                lastUpdate = new Date();
                 collection.add(newElement);
             } else {
                 logger.severe("Произошла ошибка при обновлении объекта, возможно id не найден");
@@ -186,6 +192,7 @@ public class RouteManager {
             List<Route> list = convertToList(collection);
             list.remove(route);
             collection = convertFromList(list);
+            lastUpdate = new Date();
         }
         return removed;
     }
@@ -197,6 +204,7 @@ public class RouteManager {
     private void localRemove(Route route) {
         List<Route> list = convertToList(collection);
         list.remove(route);
+        lastUpdate = new Date();
         collection = convertFromList(list);
     }
 
@@ -206,6 +214,7 @@ public class RouteManager {
 
     private boolean forceRemove(Route route) {
         try {
+            lastUpdate = new Date();
             return dbManager.removeObject(route.getId());
         } catch (NoAccessToObjectException e) {
             return false;
@@ -314,6 +323,7 @@ public class RouteManager {
 
     public void removeAllByDistance(double distance, long userId) {
         PriorityQueue<Route> userColl = getDBCollection(userId);
+        lastUpdate = new Date();
         userColl.stream().filter(el -> (el.getDistance() == distance)).forEach(this::forceRemove);
     }
 
@@ -363,6 +373,7 @@ public class RouteManager {
     }
 
     public void removeGreater(Route route, long userId) {
+        lastUpdate = new Date();
         getCollection()
                 .stream()
                 .filter(element -> (element.compareTo(route) > 0))
@@ -377,6 +388,7 @@ public class RouteManager {
         boolean removed = false;
         PriorityQueue<Route> userCol = getDBCollection(userId);
         if (!userCol.isEmpty()) {
+            lastUpdate = new Date();
             long firstId = userCol.element().getId();
             removed = removeElement(firstId, userId);
         }
@@ -389,6 +401,7 @@ public class RouteManager {
      * @return true, если успешно, false - если не удалось найти объекты
      */
     public boolean clearUserObjects(long userId) {
+        lastUpdate = new Date();
         return dbManager.clearObjects(userId);
     }
 
@@ -431,4 +444,7 @@ public class RouteManager {
         };
     }
 
+    public Date getLastUpdate() {
+        return lastUpdate;
+    }
 }

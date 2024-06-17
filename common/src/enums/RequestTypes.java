@@ -4,5 +4,6 @@ public enum RequestTypes {
     COMMAND,
     BUILD,
     MESSAGE,
-    FILE
+    FILE,
+    UPDATE
 }

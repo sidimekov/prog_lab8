@@ -70,6 +70,11 @@ public class VisualizationForm extends JFrame {
             setVisible(true);
         }
     }
+    public void reload() {
+        repaint();
+        pack();
+        ((VisualizationPanel) visualizationPanel).animate();
+    }
 
     public class VisualizationPanel extends JPanel {
 

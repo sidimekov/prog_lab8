@@ -27,7 +27,7 @@ public class LanguageDialog extends JDialog {
         russianButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Locale ruLocale = Locale.of("ru", "RU");
+                Locale ruLocale = new Locale("ru", "RU");
                 if (LocalizationManager.getLocale() != ruLocale) {
                     LocalizationManager.setLocale(ruLocale);
                     guiManager.updateLanguage();
@@ -38,7 +38,7 @@ public class LanguageDialog extends JDialog {
         estonianButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Locale locale = Locale.of("et", "EE");
+                Locale locale = new Locale("et", "EE");
                 if (LocalizationManager.getLocale() != locale) {
                     LocalizationManager.setLocale(locale);
                     guiManager.updateLanguage();
@@ -49,7 +49,7 @@ public class LanguageDialog extends JDialog {
         ukrainianButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Locale locale = Locale.of("uk", "UA");
+                Locale locale = new Locale("uk", "UA");
                 if (LocalizationManager.getLocale() != locale) {
                     LocalizationManager.setLocale(locale);
                     guiManager.updateLanguage();
@@ -60,7 +60,7 @@ public class LanguageDialog extends JDialog {
         spanishButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Locale locale = Locale.of("es", "HN");
+                Locale locale = new Locale("es", "HN");
                 if (LocalizationManager.getLocale() != locale) {
                     LocalizationManager.setLocale(locale);
                     guiManager.updateLanguage();

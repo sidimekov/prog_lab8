@@ -444,7 +444,6 @@ public class DatabaseManager {
             logger.severe(String.format("Для маршрута %s (id: %s) не найден пользователь!", route.getName(), route.getId()));
             route.setColor(new Color(128,128,128));
         }
-        System.out.printf("%s : %s\n", route.getName(), route.getColor());
         return route;
     }
 

@@ -11,7 +11,7 @@ public class LocalizationManager {
     private static Locale locale;
 
     private LocalizationManager() {
-        setLocale(Locale.of("ru", "RU"));
+        setLocale(new Locale("ru", "RU"));
     }
 //    public static LocalizationManager getInstance() {
 //        if (instance == null) {
@@ -21,7 +21,7 @@ public class LocalizationManager {
 //    }
 
     public static void setLocale() {
-        setLocale(Locale.of("ru", "RU"));
+        setLocale(new Locale("ru", "RU"));
     }
 
     public static void setLocale(Locale locale) {

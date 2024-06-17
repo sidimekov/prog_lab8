@@ -1,11 +1,14 @@
 package network;
 
+import enums.ResponseStatus;
 import util.CommandInvoker;
 import entity.Route;
 import enums.ReadModes;
 
 import java.io.*;
 import java.net.*;
+import java.util.Date;
+import java.util.Objects;
 import java.util.PriorityQueue;
 
 public class Client {
@@ -13,6 +16,7 @@ public class Client {
     private DatagramSocket dsClient;
     private User user;
     public final InetSocketAddress serverSocketAddr = new InetSocketAddress("localhost", 8000);
+    public Date currentLastUpdate;
 
     private Client() {
         client = this;
@@ -96,6 +100,15 @@ public class Client {
         return response;
     }
 
+    public boolean checkForUpdates() {
+        Response response = sendRequest(new UpdateRequest(currentLastUpdate), serverSocketAddr.getAddress(), serverSocketAddr.getPort());
+        if (Objects.requireNonNull(response.getStatus()) == ResponseStatus.OK) {
+            return false;
+        }
+        client.setCurrentLastUpdate((Date) response.getObject());
+        return true;
+    }
+
     public void sendResponse(Response response, InetAddress serverAddr, int serverPort) {
 
         try {
@@ -168,5 +181,12 @@ public class Client {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public void setCurrentLastUpdate(Date currentLastUpdate) {
+        this.currentLastUpdate = currentLastUpdate;
+    }
+    public void updateLast() {
+        setCurrentLastUpdate(new Date());
     }
 }
