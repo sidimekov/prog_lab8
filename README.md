@@ -1,5 +1,20 @@
 # Лабораторная работа #8 про проге
 
+## обзор и картиночки
+Вход:
+![image](https://github.com/sidimekov/prog_lab8/assets/82562345/5fbbfc9a-0d3a-4da9-bd22-36c8431d0531)
+
+Главная страница
+![image](https://github.com/sidimekov/prog_lab8/assets/82562345/65f205d9-96f4-44dd-adf9-a61977651aac)
+
+Визуализация (можно увеличивать уменьшать двигать туда сюда)
+![image](https://github.com/sidimekov/prog_lab8/assets/82562345/09a1b022-efef-4ebd-8bb0-267d48b102c1)
+
+Другие команды
+![image](https://github.com/sidimekov/prog_lab8/assets/82562345/f3c772ff-6bbb-4e9a-89ee-add3e0b0cda1)
+
+
+
 ## туду
 - [x] visualizacia objectov:
   - [x] draw objects
