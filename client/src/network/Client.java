@@ -1,6 +1,6 @@
 package network;
 
-import commandManagers.CommandInvoker;
+import util.CommandInvoker;
 import entity.Route;
 import enums.ReadModes;
 

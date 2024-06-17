@@ -2,7 +2,7 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="gui.forms.MainPane">
   <grid id="27dc6" binding="mainPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
     <constraints>
-      <xy x="149" y="65" width="814" height="571"/>
+      <xy x="149" y="65" width="989" height="571"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -72,12 +72,12 @@
           <component id="dd542" class="javax.swing.JButton" binding="languageButton">
             <constraints>
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
-                <preferred-size width="20" height="20"/>
-                <maximum-size width="20" height="20"/>
+                <preferred-size width="25" height="25"/>
+                <maximum-size width="25" height="25"/>
               </grid>
             </constraints>
             <properties>
-              <icon value="resources/settings.png"/>
+              <icon value="resources/language.png"/>
               <text value=""/>
             </properties>
           </component>

@@ -1,9 +1,10 @@
 package gui.forms;
 
-import commandManagers.CommandInvoker;
+import util.CommandInvoker;
 import enums.ReadModes;
 import gui.GuiManager;
 import network.Response;
+import util.LocalizationManager;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -14,7 +15,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class SignInPane extends JPanel {
+public class SignInPane extends JPanel  {
     GuiManager guiManager = GuiManager.getInstance();
     private JPanel signInPanel;
     private JPanel rightPanel;
@@ -27,6 +28,7 @@ public class SignInPane extends JPanel {
     private JLabel signUpLabel;
     private JButton signUpButton;
     private JLabel messageLabel;
+    private JButton languageButton;
 
     public SignInPane() {
 
@@ -52,11 +54,11 @@ public class SignInPane extends JPanel {
         leftPanel.setBounds(0,0,512,512);
         leftPanel.setBounds(0,0,512,512);
 
-        helloLabel = new JLabel(guiManager.getResourceBundle().getString("authHello"));
+        helloLabel = new JLabel(LocalizationManager.getString("authHello"));
         helloLabel.setFont(guiManager.getDefaultFont(32));
         leftPanel.add(helloLabel);
 
-        loginLabel = new JLabel(guiManager.getResourceBundle().getString("signInLabel"));
+        loginLabel = new JLabel(LocalizationManager.getString("signInLabel"));
         loginLabel.setFont(guiManager.getDefaultFont(20));
         leftPanel.add(loginLabel);
 
@@ -75,7 +77,7 @@ public class SignInPane extends JPanel {
 
         leftPanel.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        signInButton = new JButton(guiManager.getResourceBundle().getString("signInButton"));
+        signInButton = new JButton(LocalizationManager.getString("signInButton"));
         signInButton.setFont(guiManager.getDefaultFont());
         leftPanel.add(signInButton);
 
@@ -85,21 +87,33 @@ public class SignInPane extends JPanel {
         messageLabel.setFont(guiManager.getDefaultFont());
         leftPanel.add(messageLabel);
 
-        signUpLabel = new JLabel(guiManager.getResourceBundle().getString("signInFirstTime"));
+        signUpLabel = new JLabel(LocalizationManager.getString("signInFirstTime"));
         signUpLabel.setFont(guiManager.getDefaultFont());
         leftPanel.add(signUpLabel);
 
-        signUpButton = new JButton(guiManager.getResourceBundle().getString("signUpButton"));
+        signUpButton = new JButton(LocalizationManager.getString("signUpButton"));
         signUpButton.setFont(guiManager.getDefaultFont());
         leftPanel.add(signUpButton);
+
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+
+        languageButton = new JButton();
+        languageButton.setHorizontalAlignment(SwingConstants.CENTER);
+        languageButton.setIcon(new ImageIcon("client/src/resources/language.png"));
+        languageButton.setOpaque(false);
+        languageButton.setContentAreaFilled(false);
+        languageButton.setBorderPainted(false);
+        leftPanel.add(languageButton);
 
         signInPanel.add(leftPanel);
         signInPanel.add(rightPanel);
 
+        updateLanguage();
+
         signUpButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                guiManager.openSingUpPanel();
+                guiManager.openSignUpPanel();
             }
         });
         signInButton.addActionListener(new ActionListener() {
@@ -109,16 +123,27 @@ public class SignInPane extends JPanel {
                 String password = new String(passwordField.getPassword());
                 Response response = CommandInvoker.getInstance().runCommand(String.format("login %s %s", login, password), ReadModes.CONSOLE);
                 switch (response.getStatus()) {
-                    case OK -> guiManager.openMainPanel();
+                    case OK -> {
+                        guiManager.openMainPanel();
+                        loginField.setText("");
+                        passwordField.setText("");
+                        messageLabel.setText("");
+                    }
                     case CLIENT_ERROR -> {
                         messageLabel.setForeground(Color.RED);
                         messageLabel.setText(response.getMessage());
                     }
                     case SERVER_ERROR -> {
                         messageLabel.setForeground(Color.RED);
-                        messageLabel.setText(guiManager.getResourceBundle().getString("serverError"));
+                        messageLabel.setText(LocalizationManager.getString("serverError"));
                     }
                 }
+            }
+        });
+        languageButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                guiManager.openLanguageDialog(guiManager.getMainFrame());
             }
         });
     }
@@ -138,5 +163,13 @@ public class SignInPane extends JPanel {
     public void clearMessageLabel() {
         this.messageLabel.setText("");
         this.messageLabel.setForeground(Color.BLACK);
+    }
+
+    public void updateLanguage() {
+        helloLabel.setText(LocalizationManager.getString("authHello"));
+        loginLabel.setText(LocalizationManager.getString("signInLabel"));
+        signUpLabel.setText(LocalizationManager.getString("signInFirstTime"));
+        signInButton.setText(LocalizationManager.getString("signInButton"));;
+        signUpButton.setText(LocalizationManager.getString("signUpButton"));;
     }
 }

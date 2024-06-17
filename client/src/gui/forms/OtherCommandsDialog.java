@@ -1,11 +1,12 @@
 package gui.forms;
 
-import commandManagers.CommandInvoker;
+import util.CommandInvoker;
 import entity.Route;
 import enums.Commands;
 import enums.ReadModes;
 import gui.GuiManager;
 import network.Response;
+import util.LocalizationManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,7 +16,7 @@ import java.util.ResourceBundle;
 
 public class OtherCommandsDialog extends JDialog {
     GuiManager guiManager = GuiManager.getInstance();
-    ResourceBundle resourceBundle = guiManager.getResourceBundle();
+    ResourceBundle resourceBundle = LocalizationManager.getBundle();
     Route specifiedRoute = null;
     File chosenFile = null;
 
@@ -168,7 +169,7 @@ public class OtherCommandsDialog extends JDialog {
 
                         switch (response.getStatus()) {
                             case OK -> {
-                                JOptionPane.showMessageDialog(null, guiManager.getResourceBundle().getString("removeGreaterSuccess"));
+                                JOptionPane.showMessageDialog(null, LocalizationManager.getString("removeGreaterSuccess"));
                                 guiManager.getMainPanel().updateTableData();
                                 specifiedRoute = null;
                                 dispose();
@@ -179,12 +180,12 @@ public class OtherCommandsDialog extends JDialog {
                             }
                             case SERVER_ERROR -> {
                                 messageLabel.setForeground(Color.RED);
-                                messageLabel.setText(GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("serverError"));
+                                messageLabel.setText(GuiManager.FONT_HTML_STRING + LocalizationManager.getString("serverError"));
                             }
                         }
                     } else {
                         messageLabel.setForeground(Color.RED);
-                        messageLabel.setText(guiManager.getResourceBundle().getString("errorSpecifyRoute"));
+                        messageLabel.setText(LocalizationManager.getString("errorSpecifyRoute"));
                     }
                 }
                 case REMOVE_ALL_BY_DISTANCE -> {
@@ -196,7 +197,7 @@ public class OtherCommandsDialog extends JDialog {
 
                         switch (response.getStatus()) {
                             case OK -> {
-                                JOptionPane.showMessageDialog(null, guiManager.getResourceBundle().getString("removeByDistanceSuccess"));
+                                JOptionPane.showMessageDialog(null, LocalizationManager.getString("removeByDistanceSuccess"));
                                 guiManager.getMainPanel().updateTableData();
                                 dispose();
                             }
@@ -206,13 +207,13 @@ public class OtherCommandsDialog extends JDialog {
                             }
                             case SERVER_ERROR -> {
                                 messageLabel.setForeground(Color.RED);
-                                messageLabel.setText(GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("serverError"));
+                                messageLabel.setText(GuiManager.FONT_HTML_STRING + LocalizationManager.getString("serverError"));
                             }
                         }
 
                     } catch (NumberFormatException e) {
                         messageLabel.setForeground(Color.RED);
-                        messageLabel.setText(guiManager.getResourceBundle().getString("invalidDistance"));
+                        messageLabel.setText(LocalizationManager.getString("invalidDistance"));
                     }
                 }
                 case REMOVE_FIRST -> {
@@ -220,7 +221,7 @@ public class OtherCommandsDialog extends JDialog {
 
                     switch (response.getStatus()) {
                         case OK -> {
-                            JOptionPane.showMessageDialog(null, guiManager.getResourceBundle().getString("removeFirstSuccess"));
+                            JOptionPane.showMessageDialog(null, LocalizationManager.getString("removeFirstSuccess"));
                             guiManager.getMainPanel().updateTableData();
                             dispose();
                         }
@@ -230,7 +231,7 @@ public class OtherCommandsDialog extends JDialog {
                         }
                         case SERVER_ERROR -> {
                             messageLabel.setForeground(Color.RED);
-                            messageLabel.setText(GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("serverError"));
+                            messageLabel.setText(GuiManager.FONT_HTML_STRING + LocalizationManager.getString("serverError"));
                         }
                     }
                 }
@@ -244,7 +245,7 @@ public class OtherCommandsDialog extends JDialog {
 
                             switch (response.getStatus()) {
                                 case OK -> {
-                                    String displayMessage = guiManager.getResourceBundle().getString("updateSuccess");
+                                    String displayMessage = LocalizationManager.getString("updateSuccess");
                                     displayMessage = displayMessage.replace("$id$", String.valueOf(id));
                                     displayMessage = displayMessage.replace("$name$", specifiedRoute.getName());
                                     JOptionPane.showMessageDialog(null, displayMessage);
@@ -258,16 +259,16 @@ public class OtherCommandsDialog extends JDialog {
                                 }
                                 case SERVER_ERROR -> {
                                     messageLabel.setForeground(Color.RED);
-                                    messageLabel.setText(GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("serverError"));
+                                    messageLabel.setText(GuiManager.FONT_HTML_STRING + LocalizationManager.getString("serverError"));
                                 }
                             }
                         } else {
                             messageLabel.setForeground(Color.RED);
-                            messageLabel.setText(guiManager.getResourceBundle().getString("errorSpecifyRoute"));
+                            messageLabel.setText(LocalizationManager.getString("errorSpecifyRoute"));
                         }
                     } catch (NumberFormatException e) {
                         messageLabel.setForeground(Color.RED);
-                        messageLabel.setText(guiManager.getResourceBundle().getString("invalidId"));
+                        messageLabel.setText(LocalizationManager.getString("invalidId"));
                     }
                 }
                 case CLEAR -> {
@@ -275,7 +276,7 @@ public class OtherCommandsDialog extends JDialog {
 
                     switch (response.getStatus()) {
                         case OK -> {
-                            String displayMessage = guiManager.getResourceBundle().getString("clearSuccess");
+                            String displayMessage = LocalizationManager.getString("clearSuccess");
                             JOptionPane.showMessageDialog(null, displayMessage);
                             guiManager.getMainPanel().updateTableData();
                             dispose();
@@ -286,7 +287,7 @@ public class OtherCommandsDialog extends JDialog {
                         }
                         case SERVER_ERROR -> {
                             messageLabel.setForeground(Color.RED);
-                            messageLabel.setText(GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("serverError"));
+                            messageLabel.setText(GuiManager.FONT_HTML_STRING + LocalizationManager.getString("serverError"));
                         }
                     }
                 }
@@ -307,7 +308,7 @@ public class OtherCommandsDialog extends JDialog {
                             }
                             case SERVER_ERROR -> {
                                 messageLabel.setForeground(Color.RED);
-                                messageLabel.setText(GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("serverError"));
+                                messageLabel.setText(GuiManager.FONT_HTML_STRING + LocalizationManager.getString("serverError"));
                             }
                         }
                     } catch (NumberFormatException e) {
@@ -334,18 +335,18 @@ public class OtherCommandsDialog extends JDialog {
                             }
                             case SERVER_ERROR -> {
                                 messageLabel.setForeground(Color.RED);
-                                messageLabel.setText(GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("serverError"));
+                                messageLabel.setText(GuiManager.FONT_HTML_STRING + LocalizationManager.getString("serverError"));
                             }
                         }
                     } else {
                         messageLabel.setForeground(Color.RED);
-                        messageLabel.setText(GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("chooseFileFirst"));
+                        messageLabel.setText(GuiManager.FONT_HTML_STRING + LocalizationManager.getString("chooseFileFirst"));
                     }
                 }
             }
         } else {
             messageLabel.setForeground(Color.RED);
-            messageLabel.setText(guiManager.getResourceBundle().getString("specifyCommand"));
+            messageLabel.setText(LocalizationManager.getString("specifyCommand"));
         }
 
 

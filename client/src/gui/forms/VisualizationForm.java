@@ -3,16 +3,14 @@ package gui.forms;
 import entity.Route;
 import gui.GuiManager;
 import network.Client;
+import util.LocalizationManager;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
-import java.awt.geom.Path2D;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -47,6 +45,8 @@ public class VisualizationForm extends JFrame {
 //        setSize(dim);
         setLocationRelativeTo(null);
         setResizable(true);
+
+        updateLanguage();
 
 //        mainPanel.setBounds(0, 0, WIDTH, HEIGHT);
         mainPanel.setSize(new Dimension(WIDTH, HEIGHT));
@@ -102,6 +102,7 @@ public class VisualizationForm extends JFrame {
             t.setCoalesce(false);
             addListeners();
             initPopupMenu();
+
         }
 
         private void initPopupMenu() {
@@ -132,7 +133,7 @@ public class VisualizationForm extends JFrame {
 
             for (Route route : routes) {
 
-                Color color = new Color(route.getUserHash());
+                Color color = route.getColor();
                 if (interactLines.get(route.getId()) == hoveredLine) {
                     color = color.brighter();
                 }
@@ -214,10 +215,10 @@ public class VisualizationForm extends JFrame {
                             }
                         }
                         if (route != null) {
-                            popupLabel.setText(GuiManager.FONT_HTML_STRING + GuiManager.getInstance().getResourceBundle().getString("routeInfo").replace("$route$", route.toString()).replace("\n", "<br>"));
+                            popupLabel.setText(GuiManager.FONT_HTML_STRING + LocalizationManager.getString("routeInfo").replace("$route$", route.toString()).replace("\n", "<br>"));
                             popupMenu.show(VisualizationPanel.this, e.getX(), e.getY());
                         } else {
-                            popupLabel.setText(GuiManager.FONT_HTML_STRING + GuiManager.getInstance().getResourceBundle().getString("noRouteInfo"));
+                            popupLabel.setText(GuiManager.FONT_HTML_STRING + LocalizationManager.getString("noRouteInfo"));
                             popupMenu.show(VisualizationPanel.this, e.getX(), e.getY());
                         }
                     } else {
@@ -304,5 +305,10 @@ public class VisualizationForm extends JFrame {
 
     private void createUIComponents() {
         visualizationPanel = new VisualizationPanel();
+    }
+
+    private void updateLanguage() {
+        visualuzationLabel.setText(LocalizationManager.getString("visualizeButton"));
+        errorLabel.setText(LocalizationManager.getString("serverError"));
     }
 }

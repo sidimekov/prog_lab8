@@ -1,7 +1,9 @@
 package entity;
 
+import network.User;
 import util.IdManager;
 
+import java.awt.*;
 import java.io.Serial;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -19,7 +21,7 @@ public class Route extends Entity implements Comparable {
     private LocationTo to; //Поле может быть null
     private double distance; //Значение поля должно быть больше 1
 
-    private int userHash;
+    private Color color;
 
 
     public Route(String name, Coordinates coordinates, LocationFrom from, LocationTo to, double distance) {
@@ -149,11 +151,25 @@ public class Route extends Entity implements Comparable {
         }
     }
 
-    public void setUserHash(int userHash) {
-        this.userHash = userHash;
+    public void setColor(Color color) {
+        this.color = color;
+    }
+    public void setColorFromUser(User user) {
+        Color userColor = new Color(user.hashCode());
+        int red = userColor.getRed();
+        int green = userColor.getGreen();
+        int blue = userColor.getBlue();
+        double brightness = 0.299 * red + 0.587 * green + 0.114 * blue;
+        if (brightness < 128) {
+            int newRed = (int) (red + (255 - red) * 0.5);
+            int newGreen = (int) (green + (255 - green) * 0.5);
+            int newBlue = (int) (blue + (255 - blue) * 0.5);
+            userColor = new Color(newRed, newGreen, newBlue);
+        }
+        setColor(userColor);
     }
 
-    public int getUserHash() {
-        return userHash;
+    public Color getColor() {
+        return color;
     }
 }

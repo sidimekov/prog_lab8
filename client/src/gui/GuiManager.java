@@ -8,9 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.InputStreamReader;
 import java.util.*;
-import java.util.List;
 
 public class GuiManager {
     private static GuiManager instance;
@@ -19,8 +17,6 @@ public class GuiManager {
     private SignInPane signInForm;
     private SignUpPane signUpForm;
     private MainPane mainPanel;
-    private ResourceBundle resourceBundle;
-    private Locale locale;
     private Client client = Client.getInstance();
     public static final String FONT_HTML_STRING = "<html><font name=\"Century Gothic\" size=\"4\"/>";
 
@@ -38,7 +34,6 @@ public class GuiManager {
         if (instance == null) {
             instance = new GuiManager(new MainFrame(), new VisualizationForm());
         }
-        instance.updateLocale(Locale.of("ru","RU"));
         return instance;
     }
 
@@ -50,6 +45,7 @@ public class GuiManager {
     }
 
     public void openSignInPanel() {
+        signInForm.updateLanguage();
         mainFrame.setContentPane(signInForm.getSignInPanel());
         mainFrame.pack();
         mainFrame.setSize(1024, 512);
@@ -67,16 +63,18 @@ public class GuiManager {
 //        signInForm.setAuthMessageLabel(null);
     }
 
-    public void openSingUpPanel() {
+    public void openSignUpPanel() {
+        signUpForm.updateLanguage();
 //        frame.add()
+        mainFrame.setPreferredSize(new Dimension(1024, 512));
         mainFrame.setContentPane(signUpForm.getSignUpPanel());
-        mainFrame.setSize(1024, 512);
         mainFrame.pack();
         mainFrame.setResizable(false);
         mainFrame.setVisible(true);
     }
 
     public void openMainPanel() {
+        mainPanel.updateLanguage();
         mainFrame.setContentPane(mainPanel.getMainPanel());
 
         mainPanel.updateTableData();
@@ -181,44 +179,13 @@ public class GuiManager {
         return getDefaultFont(16);
     }
 
-    public Locale getLocale() {
-        return locale;
-    }
-
-    public void updateLocale(Locale locale) {
-
-        ResourceBundle.clearCache();
-        if (locale != null) {
-            resourceBundle = ResourceBundle.getBundle("resources.gui", locale);
-            System.out.println(locale);
-        } else {
-            // получить английский дефолтный из gui.properties
-            resourceBundle = ResourceBundle.getBundle("resources.gui",
-                    new ResourceBundle.Control() {
-                        @Override
-                        public List<Locale> getCandidateLocales(String name,
-                                                                Locale locale) {
-                            return Collections.singletonList(Locale.ROOT);
-                        }
-                    });
-            return;
+    public void updateLanguage() {
+        if (mainFrame.getContentPane() == mainPanel.getMainPanel()) {
+            mainPanel.updateLanguage();
+        } else if (mainFrame.getContentPane() == signInForm.getSignInPanel()) {
+            signInForm.updateLanguage();
+        } else if (mainFrame.getContentPane() == signUpForm.getSignUpPanel()) {
+            signUpForm.updateLanguage();
         }
-
-        Locale.setDefault(locale);
-        this.locale = locale;
-
     }
-
-    public ResourceBundle getResourceBundle() {
-        return resourceBundle;
-    }
-
-    public Color randomColor() {
-        Random rand = new Random();
-        float r = 0.1f + rand.nextFloat() * 0.8f;
-        float g = 0.1f + rand.nextFloat() * 0.8f;
-        float b = 0.1f + rand.nextFloat() * 0.8f;
-        return new Color(r,g,b);
-    }
-
 }

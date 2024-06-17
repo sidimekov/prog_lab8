@@ -1,9 +1,8 @@
-package commandManagers;
+package util;
 
 import enums.ReadModes;
 import enums.ResponseStatus;
 import network.*;
-import util.InputManager;
 
 import java.io.BufferedReader;
 import java.io.File;

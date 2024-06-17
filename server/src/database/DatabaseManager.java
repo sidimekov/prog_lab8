@@ -7,9 +7,9 @@ import entity.Route;
 import exceptions.NoAccessToObjectException;
 import network.Server;
 import network.User;
-import org.postgresql.util.PSQLException;
 import util.HashManager;
 
+import java.awt.*;
 import java.sql.*;
 import java.util.*;
 import java.util.logging.Logger;
@@ -96,7 +96,7 @@ public class DatabaseManager {
         return -1;
     }
 
-    private User getUserById(long id) {
+    public User getUserById(long id) {
         Connection connection = connect();
         try {
             if (connection != null) {
@@ -119,6 +119,7 @@ public class DatabaseManager {
             e.printStackTrace();
             return null;
         }
+        logger.severe(String.format("Не нашлось пользователя с id %s", id));
         return null;
     }
 
@@ -436,7 +437,14 @@ public class DatabaseManager {
                         resultSet.getLong(12)
                 ),
                 resultSet.getDouble(13));
-        route.setUserHash(getUserById(resultSet.getLong(14)).hashCode());
+        if (getUserById(resultSet.getLong(14)) != null) {
+            User user = getUserById(resultSet.getLong(14));
+            route.setColorFromUser(user);
+        } else {
+            logger.severe(String.format("Для маршрута %s (id: %s) не найден пользователь!", route.getName(), route.getId()));
+            route.setColor(new Color(128,128,128));
+        }
+        System.out.printf("%s : %s\n", route.getName(), route.getColor());
         return route;
     }
 

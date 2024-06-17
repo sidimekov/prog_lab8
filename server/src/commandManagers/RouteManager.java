@@ -107,6 +107,7 @@ public class RouteManager {
             long id = dbManager.addRoute(el, userId);
             if (id != -1) {
                 el.setId(id);
+                el.setColorFromUser(dbManager.getUserById(userId));
                 collection.add(el);
             } else {
                 logger.severe("Ошибка с бд при добавлении элемента");
@@ -115,6 +116,7 @@ public class RouteManager {
             if (RouteManager.validateElement(el)) {
                 long id = dbManager.addRoute(el, userId);
                 el.setId(id);
+                el.setColorFromUser(dbManager.getUserById(userId));
                 if (id != -1) {
                     collection.add(el);
                 } else {
@@ -406,7 +408,7 @@ public class RouteManager {
 
 
     public Object[][] getTableData(){
-        return getDBCollection().stream()
+        return getCollection().stream()
                 .map(this::createRow)
                 .toArray(Object[][]::new);
     }

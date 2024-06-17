@@ -5,6 +5,7 @@ import entity.LocationFrom;
 import entity.LocationTo;
 import entity.Route;
 import gui.GuiManager;
+import util.LocalizationManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -130,13 +131,13 @@ public class SpecifyRouteDialog extends JDialog {
             toY = Integer.parseInt(toYField.getText());
             toZ = Long.parseLong(toZField.getText());
         } catch (ClassCastException | NumberFormatException e) {
-            messageLabel.setText(guiManager.getResourceBundle().getString("invalidValues"));
+            messageLabel.setText(LocalizationManager.getString("invalidValues"));
             return;
         }
 
         // сначала чек что норм объект
         if (!Route.checkName(routeName) || !Coordinates.checkX(coordinatesX) || !Coordinates.checkY(coordinatesY) || !LocationFrom.checkX(fromX) || !LocationFrom.checkY(fromY) || !LocationFrom.checkZ(fromZ) || !LocationTo.checkName(toName) || !LocationTo.checkX(toX) || !LocationTo.checkY(toY) || !LocationTo.checkZ(toZ) || !Route.checkDistance(distance)) {
-            messageLabel.setText(guiManager.getResourceBundle().getString("invalidValues"));
+            messageLabel.setText(LocalizationManager.getString("invalidValues"));
             return;
         }
 

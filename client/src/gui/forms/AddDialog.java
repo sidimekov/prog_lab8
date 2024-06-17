@@ -1,6 +1,6 @@
 package gui.forms;
 
-import commandManagers.CommandInvoker;
+import util.CommandInvoker;
 import entity.Coordinates;
 import entity.LocationFrom;
 import entity.LocationTo;
@@ -8,6 +8,7 @@ import entity.Route;
 import enums.ReadModes;
 import gui.GuiManager;
 import network.Response;
+import util.LocalizationManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -109,13 +110,13 @@ public class AddDialog extends JDialog {
             toY = Integer.parseInt(toYField.getText());
             toZ = Long.parseLong(toZField.getText());
         } catch (ClassCastException | NumberFormatException e) {
-            messageLabel.setText(guiManager.getResourceBundle().getString("invalidValues"));
+            messageLabel.setText(LocalizationManager.getString("invalidValues"));
             return;
         }
 
         // сначала чек что норм объект
         if (!Route.checkName(routeName) || !Coordinates.checkX(coordinatesX) || !Coordinates.checkY(coordinatesY) || !LocationFrom.checkX(fromX) || !LocationFrom.checkY(fromY) || !LocationFrom.checkZ(fromZ) || !LocationTo.checkName(toName) || !LocationTo.checkX(toX) || !LocationTo.checkY(toY) || !LocationTo.checkZ(toZ) || !Route.checkDistance(distance)) {
-            messageLabel.setText(guiManager.getResourceBundle().getString("invalidValues"));
+            messageLabel.setText(LocalizationManager.getString("invalidValues"));
             return;
         }
 
@@ -131,7 +132,7 @@ public class AddDialog extends JDialog {
 
         switch (response.getStatus()) {
             case OK -> {
-                JOptionPane.showMessageDialog(null, guiManager.getResourceBundle().getString("addSuccess"));
+                JOptionPane.showMessageDialog(null, LocalizationManager.getString("addSuccess"));
                 guiManager.getMainPanel().updateTableData();
                 dispose();
             }
@@ -140,7 +141,7 @@ public class AddDialog extends JDialog {
                 this.pack();
             }
             case SERVER_ERROR -> {
-                messageLabel.setText(guiManager.getResourceBundle().getString("serverError"));
+                messageLabel.setText(LocalizationManager.getString("serverError"));
                 this.pack();
             }
         }

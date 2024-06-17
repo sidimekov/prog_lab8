@@ -1,9 +1,10 @@
 package gui.forms;
 
-import commandManagers.CommandInvoker;
+import util.CommandInvoker;
 import enums.ReadModes;
 import gui.GuiManager;
 import network.Response;
+import util.LocalizationManager;
 
 import javax.swing.*;
 import javax.swing.table.TableModel;
@@ -12,7 +13,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class MainPane {
+public class MainPane  {
     private GuiManager guiManager = GuiManager.getInstance();
     private JPanel mainPanel;
     private JTable mainTable;
@@ -53,13 +54,13 @@ public class MainPane {
             public void actionPerformed(ActionEvent e) {
                 int row = mainTable.getSelectedRow();
                 if (row == -1) {
-                    JOptionPane.showMessageDialog(guiManager.getMainFrame(), GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("removeErrorSelectFirst"));
+                    JOptionPane.showMessageDialog(guiManager.getMainFrame(), GuiManager.FONT_HTML_STRING + LocalizationManager.getString("removeErrorSelectFirst"));
                 } else {
                     Long id = (Long) mainTable.getModel().getValueAt(row, 0);
                     String name = (String) mainTable.getModel().getValueAt(row, 1);
 
-                    String confirmMessage = GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("removeConfirm").replace("$name$", name);
-                    String confirmTitle = guiManager.getResourceBundle().getString("removeById");
+                    String confirmMessage = GuiManager.FONT_HTML_STRING + LocalizationManager.getString("removeConfirm").replace("$name$", name);
+                    String confirmTitle = LocalizationManager.getString("removeById");
 
                     int result = JOptionPane.showConfirmDialog(guiManager.getMainFrame(), confirmMessage, confirmTitle, JOptionPane.YES_NO_OPTION);
 
@@ -68,12 +69,12 @@ public class MainPane {
                         Response response = CommandInvoker.getInstance().runCommand(String.format("remove_by_id %s", id), ReadModes.APP);
                         switch (response.getStatus()) {
                             case OK -> {
-                                String removeOk = GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("removeOk").replace("$name$", name);
+                                String removeOk = GuiManager.FONT_HTML_STRING + LocalizationManager.getString("removeOk").replace("$name$", name);
                                 JOptionPane.showMessageDialog(guiManager.getMainFrame(), removeOk);
                                 updateTableData();
                             }
                             case CLIENT_ERROR -> JOptionPane.showMessageDialog(guiManager.getMainFrame(), GuiManager.FONT_HTML_STRING + response.getMessage());
-                            case SERVER_ERROR -> JOptionPane.showMessageDialog(guiManager.getMainFrame(), GuiManager.FONT_HTML_STRING + guiManager.getResourceBundle().getString("serverError"));
+                            case SERVER_ERROR -> JOptionPane.showMessageDialog(guiManager.getMainFrame(), GuiManager.FONT_HTML_STRING + LocalizationManager.getString("serverError"));
                         }
 
                     } else {
@@ -127,7 +128,7 @@ public class MainPane {
                     tableModel = (TableModel) response.getObject();
                 } catch (ClassCastException e) {
                     mainHeader.setForeground(Color.RED);
-                    mainHeader.setText(guiManager.getResourceBundle().getString("serverError"));
+                    mainHeader.setText(LocalizationManager.getString("serverError"));
                     break;
                 }
 
@@ -141,11 +142,20 @@ public class MainPane {
             }
             case SERVER_ERROR -> {
                 mainHeader.setForeground(Color.RED);
-                mainHeader.setText(guiManager.getResourceBundle().getString("serverError"));
+                mainHeader.setText(LocalizationManager.getString("serverError"));
             }
         }
     }
 
+    public void updateLanguage() {
+        mainHeader.setText(LocalizationManager.getString("mainHeader"));
+        logoutButton.setText(LocalizationManager.getString("logoutButton"));
+        refreshButton.setText(LocalizationManager.getString("refresh"));
+        addButton.setText(LocalizationManager.getString("addButton"));
+        removeButton.setText(LocalizationManager.getString("removeButton"));
+        otherButton.setText(LocalizationManager.getString("otherButton"));
+        visualizeButton.setText(LocalizationManager.getString("visualizeButton"));
+    }
     public void updateUserLabel(String login) {
         username.setText(login);
     }

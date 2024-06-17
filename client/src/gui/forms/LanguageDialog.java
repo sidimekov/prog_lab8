@@ -1,6 +1,7 @@
 package gui.forms;
 
 import gui.GuiManager;
+import util.LocalizationManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,28 +27,44 @@ public class LanguageDialog extends JDialog {
         russianButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                guiManager.updateLocale(Locale.of("ru", "RU"));
+                Locale ruLocale = Locale.of("ru", "RU");
+                if (LocalizationManager.getLocale() != ruLocale) {
+                    LocalizationManager.setLocale(ruLocale);
+                    guiManager.updateLanguage();
+                }
                 dispose();
             }
         });
         estonianButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                guiManager.updateLocale(Locale.of("et", "EE"));
+                Locale locale = Locale.of("et", "EE");
+                if (LocalizationManager.getLocale() != locale) {
+                    LocalizationManager.setLocale(locale);
+                    guiManager.updateLanguage();
+                }
                 dispose();
             }
         });
         ukrainianButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                guiManager.updateLocale(Locale.of("uk", "UA"));
+                Locale locale = Locale.of("uk", "UA");
+                if (LocalizationManager.getLocale() != locale) {
+                    LocalizationManager.setLocale(locale);
+                    guiManager.updateLanguage();
+                }
                 dispose();
             }
         });
         spanishButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                guiManager.updateLocale(Locale.of("es", "HN"));
+                Locale locale = Locale.of("es", "HN");
+                if (LocalizationManager.getLocale() != locale) {
+                    LocalizationManager.setLocale(locale);
+                    guiManager.updateLanguage();
+                }
                 dispose();
             }
         });

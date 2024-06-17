@@ -2,7 +2,7 @@
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="gui.forms.VisualizationForm">
   <grid id="27dc6" binding="mainPanel" layout-manager="CardLayout" hgap="0" vgap="0" show="ee2e2">
     <constraints>
-      <xy x="120" y="89" width="1386" height="444"/>
+      <xy x="120" y="89" width="3539" height="444"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -73,7 +73,7 @@
                 </constraints>
                 <properties>
                   <font name="Century Gothic" size="48"/>
-                  <text resource-bundle="resources/gui" key="visualizeButton"/>
+                  <text value=""/>
                 </properties>
               </component>
             </children>
