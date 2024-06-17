@@ -76,7 +76,8 @@ public class Server {
 
         BufferedReader reader = InputManager.getConsoleReader();
 
-//        Request request = null;
+        Request request = null;
+        Response response = null;
 //
         Future<Request> requestFuture = null;
 //
@@ -91,45 +92,55 @@ public class Server {
             ExecutorService responseSender = ThreadManager.getSendResponseExecutor();
 
             // Получение запроса
-            Request request;
 
-            Callable<Request> callRequest = this::listenRequest;
+            if (request == null) {
 
-            requestFuture = requestGetter.submit(callRequest);
+                Callable<Request> callRequest = this::listenRequest;
 
-            try {
-                request = requestFuture.get();
-            } catch (InterruptedException e) {
-                logger.severe("Поток чтения запросов прерван");
-                continue;
-            } catch (ExecutionException e) {
-                logger.severe(String.format("В потоке чтения запросов возникла ошибка: %s\n", e.getMessage()));
-                continue;
-            }
+                requestFuture = requestGetter.submit(callRequest);
 
-            // Обработка запроса и формирование ответа
-            Response response;
-
-            Callable<Response> callResponse = () -> makeResponse(request);
+                try {
+                    request = requestFuture.get();
+                } catch (InterruptedException e) {
+                    logger.severe("Поток чтения запросов прерван");
+                    continue;
+                } catch (ExecutionException e) {
+                    logger.severe(String.format("В потоке чтения запросов возникла ошибка: %s\n", e.getMessage()));
+                    continue;
+                }
+//            }
+//
+//            // Обработка запроса и формирование ответа
+//
+//            if (request != null) {
+                Request finalRequest = request;
+                Callable<Response> callResponse = () -> makeResponse(finalRequest);
 
 //            Future<Response> responseFuture = requestExecutor.invoke(callResponse);
-            Future<Response> responseFuture = requestExecutor.submit(callResponse);
+                Future<Response> responseFuture = requestExecutor.submit(callResponse);
 
-            try {
-                response = responseFuture.get();
-            } catch (InterruptedException e) {
-                logger.severe("Поток обработки запросов прерван");
-                continue;
-            } catch (ExecutionException e) {
-                logger.severe(String.format("В потоке обработки запросов возникла ошибка: %s\n", e.getMessage()));
-                e.printStackTrace();
-                continue;
+                try {
+                    response = responseFuture.get();
+                } catch (InterruptedException e) {
+                    logger.severe("Поток обработки запросов прерван");
+                    continue;
+                } catch (ExecutionException e) {
+                    logger.severe(String.format("В потоке обработки запросов возникла ошибка: %s\n", e.getMessage()));
+                    e.printStackTrace();
+                    continue;
+                }
+                request = null;
+//            }
+//
+//            if (response != null) {
+                Response finalResponse = response;
+                // Посылка запроса
+                Runnable sendResponse = () -> sendResponse(finalResponse);
+
+                responseSender.execute(sendResponse);
+
+                response = null;
             }
-
-            // Посылка запроса
-            Runnable sendResponse = () -> sendResponse(response);
-
-            responseSender.execute(sendResponse);
         }
     }
 
@@ -173,7 +184,9 @@ public class Server {
             ois.close();
 
             String msg = request.toString();
-            logger.info(String.format("Получен запрос от %s:%s : %s\n", clientAddr, clientPort, msg));
+            if (request.getType() != RequestTypes.UPDATE) {
+                logger.info(String.format("Получен запрос от %s:%s : %s\n", clientAddr, clientPort, msg));
+            }
 
         } catch (IOException e) {
             logger.severe(String.format("Ошибка ввода/вывода при получении запросов: %s\n", e.getMessage()));

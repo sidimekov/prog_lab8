@@ -16,20 +16,25 @@ import java.util.logging.Logger;
 
 public class DatabaseManager {
     private final Logger logger = Server.getLogger();
+    private Connection connection;
 
     private Connection connect() {
         try {
-            Class.forName("org.postgresql.Driver");
-            return DriverManager.getConnection("jdbc:postgresql://localhost:8005/studs", Server.getInstance().getDbLogin(), Server.getInstance().getDbPasswd());
+            if (connection == null || connection.isClosed()) {
+                Class.forName("org.postgresql.Driver");
+                connection = DriverManager.getConnection("jdbc:postgresql://localhost:8005/studs", Server.getInstance().getDbLogin(), Server.getInstance().getDbPasswd());
+            }
+            return connection;
         } catch (SQLException e) {
             logger.severe("Ошибка подключения к базе данных");
-//            e.printStackTrace();
-            System.exit(0);
+            e.printStackTrace();
+//            System.exit(0);
+            return null;
         } catch (ClassNotFoundException e) {
             logger.severe("Отсутствует драйвер PostgreSQL");
             System.exit(0);
+            return null;
         }
-        return null;
     }
 
 
@@ -442,7 +447,7 @@ public class DatabaseManager {
             route.setColorFromUser(user);
         } else {
             logger.severe(String.format("Для маршрута %s (id: %s) не найден пользователь!", route.getName(), route.getId()));
-            route.setColor(new Color(128,128,128));
+            route.setColor(new Color(128, 128, 128));
         }
         return route;
     }

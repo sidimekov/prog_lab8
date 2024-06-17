@@ -44,6 +44,11 @@ public class GuiManager {
         openSignInPanel();
     }
 
+    public void updateData() {
+        mainPanel.updateTableData();
+        visualizationForm.reload();
+    }
+
     public void openSignInPanel() {
         signInForm.updateLanguage();
         mainFrame.setContentPane(signInForm.getSignInPanel());

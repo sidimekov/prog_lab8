@@ -1,6 +1,7 @@
 package network;
 
 import enums.ResponseStatus;
+import gui.GuiManager;
 import util.CommandInvoker;
 import entity.Route;
 import enums.ReadModes;
@@ -10,6 +11,9 @@ import java.net.*;
 import java.util.Date;
 import java.util.Objects;
 import java.util.PriorityQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Client {
     private static Client client;
@@ -20,6 +24,8 @@ public class Client {
 
     private Client() {
         client = this;
+
+        checkingUpdates();
 
         try {
             dsClient = new DatagramSocket();
@@ -107,6 +113,21 @@ public class Client {
         }
         client.setCurrentLastUpdate((Date) response.getObject());
         return true;
+    }
+
+    public void checkingUpdates() {
+        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+        service.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                if (user != null) {
+                    if (checkForUpdates()) {
+                        GuiManager.getInstance().updateData();
+                    }
+                }
+//                System.out.println("da");
+            }
+        }, 5, 10, TimeUnit.SECONDS);
     }
 
     public void sendResponse(Response response, InetAddress serverAddr, int serverPort) {

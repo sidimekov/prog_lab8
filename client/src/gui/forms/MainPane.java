@@ -94,7 +94,7 @@ public class MainPane {
             @Override
             public void actionPerformed(ActionEvent e) {
                 guiManager.openOtherCommandsDialog();
-                System.out.println(Client.getInstance().checkForUpdates());
+//                System.out.println(Client.getInstance().checkForUpdates());
             }
         });
         refreshButton.addActionListener(new ActionListener() {
@@ -154,12 +154,10 @@ public class MainPane {
                 Client.getInstance().updateLast();
             }
             case CLIENT_ERROR -> {
-                mainHeader.setForeground(Color.RED);
-                mainHeader.setText(response.getMessage());
+                JOptionPane.showMessageDialog(mainPanel, response.getMessage());
             }
             case SERVER_ERROR -> {
-                mainHeader.setForeground(Color.RED);
-                mainHeader.setText(LocalizationManager.getString("serverError"));
+                JOptionPane.showMessageDialog(mainPanel, LocalizationManager.getString("serverError"));
             }
         }
     }

@@ -72,7 +72,6 @@ public class VisualizationForm extends JFrame {
     }
     public void reload() {
         repaint();
-        pack();
         ((VisualizationPanel) visualizationPanel).animate();
     }
 
