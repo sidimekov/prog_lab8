@@ -1,6 +1,7 @@
 package gui.forms;
 
 import entity.Route;
+import enums.Commands;
 import gui.GuiManager;
 import network.Client;
 import util.LocalizationManager;
@@ -30,6 +31,7 @@ public class VisualizationForm extends JFrame {
     private JSlider zoomSlider;
     private JLabel visualuzationLabel;
     private JPanel visualHeaderPanel;
+    private JLabel infoLabel;
 
     public VisualizationForm() {
 //        setSize(WIDTH, HEIGHT);
@@ -201,7 +203,7 @@ public class VisualizationForm extends JFrame {
         private void addListeners() {
             addMouseListener(new MouseAdapter() {
                 @Override
-                public void mousePressed(MouseEvent e) {
+                public void mouseClicked(MouseEvent e) {
                     dragStartX = e.getX() - offsetX;
                     dragStartY = e.getY() - offsetY;
                     clickedLine = getLineUnderMouse(e.getPoint());
@@ -218,13 +220,18 @@ public class VisualizationForm extends JFrame {
                                 }
                             }
                         }
-                        if (route != null) {
-                            popupLabel.setText(GuiManager.FONT_HTML_STRING + LocalizationManager.getString("routeInfo").replace("$route$", route.toString()).replace("\n", "<br>"));
-                            popupMenu.show(VisualizationPanel.this, e.getX(), e.getY());
+                        if (e.getClickCount() >= 2) {
+                            GuiManager.getInstance().openOtherCommandsDialog(VisualizationForm.this, Commands.UPDATE, route);
                         } else {
-                            popupLabel.setText(GuiManager.FONT_HTML_STRING + LocalizationManager.getString("noRouteInfo"));
-                            popupMenu.show(VisualizationPanel.this, e.getX(), e.getY());
+                            if (route != null) {
+                                popupLabel.setText(GuiManager.FONT_HTML_STRING + LocalizationManager.getString("routeInfo").replace("$route$", route.toString()).replace("\n", "<br>"));
+                                popupMenu.show(VisualizationPanel.this, e.getX()+2, e.getY()+2);
+                            } else {
+                                popupLabel.setText(GuiManager.FONT_HTML_STRING + LocalizationManager.getString("noRouteInfo"));
+                                popupMenu.show(VisualizationPanel.this, e.getX()+2, e.getY()+2);
+                            }
                         }
+
                     } else {
                         popupMenu.setVisible(false);
                     }
@@ -313,6 +320,7 @@ public class VisualizationForm extends JFrame {
 
     private void updateLanguage() {
         visualuzationLabel.setText(LocalizationManager.getString("visualizeButton"));
+        infoLabel.setText(LocalizationManager.getString("visualInfo"));
         errorLabel.setText(LocalizationManager.getString("serverError"));
     }
 }

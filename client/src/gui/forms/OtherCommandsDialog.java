@@ -58,9 +58,11 @@ public class OtherCommandsDialog extends JDialog {
     private JLabel countGreaterThanDistanceFieldLabel;
     private JLabel executeScriptLabel;
     private JButton executeScriptSpecifyButton;
+    private JFrame frame;
 
-    public OtherCommandsDialog(Frame frame) {
+    public OtherCommandsDialog(JFrame frame) {
         super(frame);
+        this.frame = frame;
 
         commandCombo.setFont(guiManager.getDefaultFont());
         commandCombo.addItem(null);
@@ -137,7 +139,7 @@ public class OtherCommandsDialog extends JDialog {
         ActionListener specifyRouteListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                specifiedRoute = guiManager.specifyRouteDialog(specifiedRoute);
+                specifiedRoute = guiManager.specifyRouteDialog(frame, specifiedRoute);
 
                 if (specifiedRoute != null) {
                     messageLabel.setForeground(Color.BLACK);
@@ -362,6 +364,15 @@ public class OtherCommandsDialog extends JDialog {
         dialog.pack();
         dialog.setVisible(true);
         System.exit(0);
+    }
+
+    public void setOption(Commands cmd) {
+        commandCombo.setSelectedItem(cmd);
+    }
+
+    public void setSpecifiedRoute(Route specifiedRoute) {
+        this.specifiedRoute = specifiedRoute;
+        updateIdField.setText(String.valueOf(specifiedRoute.getId()));
     }
 
 

@@ -1,6 +1,7 @@
 package gui;
 
 import entity.Route;
+import enums.Commands;
 import gui.forms.*;
 import network.Client;
 
@@ -124,6 +125,18 @@ public class GuiManager {
 
         otherCommandsDialog.setVisible(true);
     }
+    public void openOtherCommandsDialog(JFrame frame, Commands cmd, Route specifiedRoute) {
+        OtherCommandsDialog otherCommandsDialog = new OtherCommandsDialog(frame);
+
+        otherCommandsDialog.setSpecifiedRoute(specifiedRoute);
+
+        otherCommandsDialog.setPreferredSize(new Dimension(800, 400));
+        otherCommandsDialog.pack();
+        otherCommandsDialog.setLocationRelativeTo(null);
+        otherCommandsDialog.setOption(cmd);
+
+        otherCommandsDialog.setVisible(true);
+    }
 
     public void openFilterDialog() {
         FilterDialog filterDialog = new FilterDialog(mainFrame);
@@ -177,10 +190,13 @@ public class GuiManager {
     }
 
     public Route specifyRouteDialog() {
-        return specifyRouteDialog(null);
+        return specifyRouteDialog(null, null);
     }
     public Route specifyRouteDialog(Route route) {
-        SpecifyRouteDialog specifyRoute = new SpecifyRouteDialog(mainFrame, route);
+        return specifyRouteDialog(null, route);
+    }
+    public Route specifyRouteDialog(JFrame frame, Route route) {
+        SpecifyRouteDialog specifyRoute = new SpecifyRouteDialog(frame, route);
 
         specifyRoute.setVisible(true);
 

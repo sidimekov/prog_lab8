@@ -1,5 +1,7 @@
 package gui.forms;
 
+import entity.Route;
+import enums.Commands;
 import network.Client;
 import util.CommandInvoker;
 import enums.ReadModes;
@@ -8,11 +10,15 @@ import network.Response;
 import util.LocalizationManager;
 
 import javax.swing.*;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -126,6 +132,14 @@ public class MainPane {
                 guiManager.openFilterDialog();
             }
         });
+        mainTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                Route route = getRouteFromTable(mainTable.getSelectedRow());
+                guiManager.openOtherCommandsDialog(guiManager.getMainFrame(), Commands.UPDATE, route);
+            }
+        });
     }
 
     public JPanel getMainPanel() {
@@ -150,6 +164,7 @@ public class MainPane {
                 rowSorter = new TableRowSorter<>(tableModel);
                 mainTable.setRowSorter(rowSorter);
                 mainTable.setModel(tableModel);
+                mainTable.setDefaultEditor(Object.class, null);
 
                 Client.getInstance().updateLast();
             }
@@ -236,6 +251,21 @@ public class MainPane {
         otherButton.setText(LocalizationManager.getString("otherButton"));
         visualizeButton.setText(LocalizationManager.getString("visualizeButton"));
         filterButton.setText(LocalizationManager.getString("filter"));
+    }
+
+    public Route getRouteFromTable(int rowIndex) {
+
+        TableModel model = mainTable.getModel();
+
+        int columnCount = model.getColumnCount();
+
+        Object[] row = new Object[columnCount];
+        for (int colIndex = 0; colIndex < columnCount; colIndex++) {
+            row[colIndex] = model.getValueAt(rowIndex, colIndex);
+        }
+        Route route = CommandInvoker.createRouteFromRow(row);
+
+        return route;
     }
 
     public void updateUserLabel(String login) {

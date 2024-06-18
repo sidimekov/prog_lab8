@@ -1,5 +1,9 @@
 package util;
 
+import entity.Coordinates;
+import entity.LocationFrom;
+import entity.LocationTo;
+import entity.Route;
 import enums.ReadModes;
 import enums.ResponseStatus;
 import network.*;
@@ -12,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Date;
 
 public class CommandInvoker {
     private static CommandInvoker instance;
@@ -199,6 +204,18 @@ public class CommandInvoker {
         }
 
 
+    }
+
+    public static Route createRouteFromRow(Object[] row) {
+        long id = (Long) row[0];
+        String name = (String) row[1];
+        Date creationDate = (Date) row[2];
+        Coordinates coordinates = new Coordinates((Double) row[3], (Integer) row[4]);
+        LocationFrom from = new LocationFrom((int) row[5], (Integer) row[6], (float) row[7]);
+        LocationTo to = new LocationTo((String) row[8], (float) row[9], (Integer) row[10], (long) row[11]);
+        double distance = (Double) row[12];
+
+        return new Route(id, name, creationDate, coordinates, from, to, distance);
     }
 }
 

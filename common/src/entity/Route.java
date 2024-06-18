@@ -43,6 +43,15 @@ public class Route extends Entity implements Comparable {
         this.to = to;
         this.distance = distance;
     }
+    public Route(long id, String name, Date creationDate, Coordinates coordinates, LocationFrom from, LocationTo to, double distance) {
+        this.id = id;
+        this.name = name;
+        this.coordinates = coordinates;
+        this.creationDate = creationDate;
+        this.from = from;
+        this.to = to;
+        this.distance = distance;
+    }
 
     public long getId() {
         return id;
