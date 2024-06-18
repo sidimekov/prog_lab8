@@ -13,7 +13,7 @@
 Другие команды
 ![image](https://github.com/sidimekov/prog_lab8/assets/82562345/f3c772ff-6bbb-4e9a-89ee-add3e0b0cda1)
 
-
+nu vot i vse, neplohaya poluchilas istoria
 
 ## туду
 - [x] visualizacia objectov:
