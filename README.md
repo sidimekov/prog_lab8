@@ -25,6 +25,7 @@ nu vot i vse, neplohaya poluchilas istoria
 - [x] filtres to table
 - [x] change the lang knopki
 - [x] sync with server
+- [x] edit object on double click (table and visualization)
 
 ## Задание
 
